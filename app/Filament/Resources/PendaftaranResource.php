@@ -127,12 +127,16 @@ class PendaftaranResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\Action::make('terima')
-                    ->label('Terima')
-                    ->icon('heroicon-o-check-circle')
-                    ->color('success')
-                    ->requiresConfirmation()
-                    ->action(fn(Pendaftaran $record) => $record->update(['status' => 'diterima']))
-                    ->visible(fn(Pendaftaran $record) => $record->status === 'menunggu'),
+   			 ->label('Terima')
+   			 ->icon('heroicon-o-check-circle')
+   			 ->color('success')
+   			 ->requiresConfirmation()
+   			 ->modalHeading('Terima Pendaftar')
+  	 		 ->modalDescription('Akun login akan otomatis dibuat dan password sementara akan tersimpan di catatan.')
+   			 ->action(function (Pendaftaran $record) {
+   			     $record->update(['status' => 'diterima']);
+   			 })
+   			 ->visible(fn(Pendaftaran $record) => $record->status === 'menunggu'),
                 Tables\Actions\Action::make('tolak')
                     ->label('Tolak')
                     ->icon('heroicon-o-x-circle')

@@ -4,12 +4,21 @@ namespace App\Http\Controllers;
 
 use App\Models\Pendaftaran;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class PendaftaranController extends Controller
 {
+    // Batas maksimal pendaftar
+    const BATAS_PENDAFTAR = 10;
+
     public function store(Request $request)
     {
+        // Cek apakah sudah mencapai batas
+        $jumlahPendaftar = Pendaftaran::count();
+        if ($jumlahPendaftar >= self::BATAS_PENDAFTAR) {
+            return redirect()->route('beranda')
+                ->with('error', 'Maaf, pendaftaran telah ditutup karena kuota ' . self::BATAS_PENDAFTAR . ' pendaftar sudah terpenuhi.');
+        }
+
         $validated = $request->validate([
             'nama_lengkap'  => 'required|string|max:255',
             'email'         => 'required|email|unique:pendaftarans,email',

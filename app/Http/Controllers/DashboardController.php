@@ -17,8 +17,9 @@ class DashboardController extends Controller
 
         // Tugas aktif dengan status pengumpulan
         $tugasAktif = Tugas::where('is_aktif', true)
-            ->orderBy('deadline')
-            ->get()
+   		 ->whereHas('mahasiswas', fn($q) => $q->where('users.id', $user->id))
+   		 ->orderBy('deadline')
+   		 ->get()
             ->map(function ($t) use ($user) {
                 $t->pengumpulan = $t->pengumpulanByUser($user->id);
                 return $t;

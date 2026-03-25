@@ -13,6 +13,7 @@ class TugasController extends Controller
     {
         $user  = Auth::user();
         $tugas = Tugas::where('is_aktif', true)
+            ->whereHas('mahasiswas', fn($q) => $q->where('users.id', $user->id))
             ->orderBy('deadline')
             ->get()
             ->map(function ($t) use ($user) {
@@ -50,10 +51,10 @@ class TugasController extends Controller
         PengumpulanTugas::updateOrCreate(
             ['tugas_id' => $tugas->id, 'user_id' => $user->id],
             [
-                'file_path'       => $filePath,
-                'catatan'         => $request->catatan,
-                'status'          => 'dikumpulkan',
-                'dikumpulkan_at'  => now(),
+                'file_path'      => $filePath,
+                'catatan'        => $request->catatan,
+                'status'         => 'dikumpulkan',
+                'dikumpulkan_at' => now(),
             ]
         );
 

@@ -10,8 +10,8 @@ class AbsensiController extends Controller
 {
     public function index()
     {
-        $user    = Auth::user();
-        $riwayat = Absensi::where('user_id', $user->id)
+        $user           = Auth::user();
+        $riwayat        = Absensi::where('user_id', $user->id)
             ->orderByDesc('tanggal')
             ->paginate(20);
 
@@ -25,13 +25,12 @@ class AbsensiController extends Controller
     {
         $user = Auth::user();
 
-        // Cek sudah check-in hari ini
         $existing = Absensi::where('user_id', $user->id)
             ->whereDate('tanggal', today())
             ->first();
 
         if ($existing) {
-            return back()->with('error', 'Anda sudah melakukan absensi masuk hari ini.');
+            return back()->with('error', 'Anda sudah melakukan absensi hari ini.');
         }
 
         Absensi::create([
@@ -47,7 +46,7 @@ class AbsensiController extends Controller
 
     public function checkOut(Request $request)
     {
-        $user   = Auth::user();
+        $user    = Auth::user();
         $absensi = Absensi::where('user_id', $user->id)
             ->whereDate('tanggal', today())
             ->first();
@@ -65,5 +64,36 @@ class AbsensiController extends Controller
         ]);
 
         return back()->with('success', 'Absensi pulang berhasil dicatat pada ' . now()->format('H:i') . '.');
+    }
+
+    public function izinSakit(Request $request)
+    {
+        $user = Auth::user();
+
+        $request->validate([
+            'status'     => 'required|in:izin,sakit',
+            'keterangan' => 'required|string|min:5|max:500',
+        ], [
+            'keterangan.required' => 'Keterangan wajib diisi.',
+            'keterangan.min'      => 'Keterangan minimal 5 karakter.',
+        ]);
+
+        $existing = Absensi::where('user_id', $user->id)
+            ->whereDate('tanggal', today())
+            ->first();
+
+        if ($existing) {
+            return back()->with('error', 'Anda sudah melakukan absensi hari ini.');
+        }
+
+        Absensi::create([
+            'user_id'    => $user->id,
+            'tanggal'    => today()->toDateString(),
+            'status'     => $request->status,
+            'keterangan' => $request->keterangan,
+        ]);
+
+        $label = $request->status === 'izin' ? 'Izin' : 'Sakit';
+        return back()->with('success', $label . ' berhasil dicatat.');
     }
 }

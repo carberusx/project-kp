@@ -32,7 +32,7 @@ Route::middleware(['auth', 'role:mahasiswa'])->prefix('mahasiswa')->name('mahasi
     Route::get('/absensi', [AbsensiController::class, 'index'])->name('absensi.index');
     Route::post('/absensi/checkin', [AbsensiController::class, 'checkIn'])->name('absensi.checkin');
     Route::post('/absensi/checkout', [AbsensiController::class, 'checkOut'])->name('absensi.checkout');
-
+    Route::post('/absensi/izin-sakit', [AbsensiController::class, 'izinSakit'])->name('absensi.izinsakit');
     // Tugas
     Route::get('/tugas', [TugasController::class, 'mahasiswaIndex'])->name('tugas.index');
     Route::get('/tugas/{tugas}/kumpul', [TugasController::class, 'showUpload'])->name('tugas.upload');

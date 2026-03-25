@@ -8,10 +8,10 @@
 {{-- ── NAVBAR ─────────────────────────────────────────────────────────────── --}}
 <header class="sticky top-0 z-50 flex items-center justify-between px-6 md:px-20 py-4 bg-white border-b border-slate-200 shadow-sm">
     <div class="flex items-center gap-3 text-primary">
-        <div class="w-9 h-9 rounded-xl bg-primary flex items-center justify-center text-white shadow-md shadow-primary/20">
-            <span class="material-symbols-outlined text-lg">account_balance</span>
+        <div class="h-14 w-auto">
+            <img src="{{ asset('images/ptsp.png') }}" alt="PTSP Jateng" class="h-full w-auto object-contain">
         </div>
-        <h2 class="text-slate-900 text-xl font-bold tracking-tight">SiMagang</h2>
+        <!--<h2 class="text-slate-900 text-xl font-bold tracking-tight">MagangDPMPTSP</h2>-->
     </div>
     <div class="hidden md:flex items-center gap-8">
         <a href="#tentang" class="text-slate-600 text-sm font-medium hover:text-primary transition-colors">Tentang Program</a>
@@ -44,13 +44,13 @@
             <div class="w-full lg:w-1/2 flex flex-col gap-6">
                 <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider w-fit">
                     <span class="material-symbols-outlined text-sm">verified</span>
-                    Program Resmi Pemerintah
+                    Program Magang DPMPTSP
                 </div>
                 <h1 class="text-slate-900 text-4xl md:text-5xl font-black leading-tight tracking-tight">
                     Bentuk Masa Depan<br><span class="text-primary">Pelayanan Publik</span>
                 </h1>
                 <p class="text-slate-500 text-lg leading-relaxed">
-                    Bergabunglah dengan Program Magang Pemerintah Nasional. Dapatkan pengalaman langsung dalam pembuatan kebijakan, administrasi publik, dan pembangunan masyarakat bersama aparatur sipil berpengalaman.
+                    Bergabunglah dengan Program Magang DPMPTSP. Dapatkan pengalaman langsung sesuai dengan Jurusan anda.
                 </p>
                 <div class="flex flex-wrap gap-4">
                     <a href="#daftar" class="flex items-center gap-2 bg-primary text-white font-bold px-6 py-3.5 rounded-xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/25">
@@ -62,7 +62,7 @@
                         Pelajari Lebih Lanjut
                     </a>
                 </div>
-                <div class="flex items-center gap-6 pt-2">
+                <!--<div class="flex items-center gap-6 pt-2">
                     <div class="text-center">
                         <p class="text-2xl font-black text-primary">500+</p>
                         <p class="text-xs text-slate-500 font-medium">Alumni</p>
@@ -77,7 +77,7 @@
                         <p class="text-2xl font-black text-primary">94%</p>
                         <p class="text-xs text-slate-500 font-medium">Tingkat Kepuasan</p>
                     </div>
-                </div>
+                </div>-->
             </div>
 
             {{-- Right: Visual --}}
@@ -91,29 +91,29 @@
                                 <span class="material-symbols-outlined text-2xl">school</span>
                             </div>
                             <div>
-                                <p class="font-bold text-lg">Cohort 2024</p>
+                                <p class="font-bold text-lg">Magang DPMPTSP</p>
                                 <p class="text-blue-200 text-sm">Sedang Berjalan</p>
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-4 mb-6">
-                            <div class="bg-white/10 rounded-xl p-4">
-                                <p class="text-3xl font-black">85</p>
-                                <p class="text-blue-200 text-sm">Magang Aktif</p>
-                            </div>
-                            <div class="bg-white/10 rounded-xl p-4">
-                                <p class="text-3xl font-black">12</p>
-                                <p class="text-blue-200 text-sm">Review Pending</p>
-                            </div>
+                        <div class="bg-white/10 rounded-xl p-4">
+                            <p class="text-3xl font-black">{{ $mahasiswaAktif }}</p>
+                            <p class="text-blue-200 text-sm">Magang Aktif</p>
                         </div>
-                        <div class="space-y-2">
-                            <div class="flex items-center justify-between text-sm">
-                                <span class="text-blue-100">Pendaftar Diterima</span>
-                                <span class="font-bold">68%</span>
-                            </div>
-                            <div class="h-2 bg-white/20 rounded-full overflow-hidden">
-                                <div class="h-full bg-white rounded-full" style="width: 68%"></div>
-                            </div>
+                        <div class="bg-white/10 rounded-xl p-4">
+                            <p class="text-3xl font-black">{{ $reviewPending }}</p>
+                            <p class="text-blue-200 text-sm">Review Pending</p>
                         </div>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-blue-100">Pendaftar Diterima</span>
+                            <span class="font-bold">{{ $persenDiterima }}%</span>
+                        </div>
+                        <div class="h-2 bg-white/20 rounded-full overflow-hidden">
+                            <div class="h-full bg-white rounded-full" style="width: {{ $persenDiterima }}%"></div>
+                        </div>
+                    </div>
                     </div>
                 </div>
             </div>
@@ -130,17 +130,17 @@
             </div>
             <h2 class="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">Mengapa Bergabung?</h2>
             <p class="text-slate-500 max-w-xl mx-auto mt-4 leading-relaxed">
-                Program magang kami memberikan kesempatan unik bagi mahasiswa untuk berkontribusi langsung pada proyek-proyek nasional yang bermakna.
+                Program magang kami memberikan kesempatan bagi mahasiswa untuk berkontribusi langsung pada proyek-proyek yang bermakna.
             </p>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+       <!-- <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div class="group flex flex-col gap-5 rounded-2xl border border-slate-200 p-7 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5 transition-all">
                 <div class="w-14 h-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all">
                     <span class="material-symbols-outlined text-3xl">groups</span>
                 </div>
                 <div>
                     <h3 class="text-slate-900 text-xl font-bold mb-2">Mentorship Ahli</h3>
-                    <p class="text-slate-500 text-sm leading-relaxed">Bekerja langsung dengan penasihat kebijakan senior dan kepala dinas yang berdedikasi pada pertumbuhan profesional Anda.</p>
+                    <p class="text-slate-500 text-sm leading-relaxed">Bekerja langsung dengan para mentor yang berdedikasi pada pertumbuhan profesional Anda.</p>
                 </div>
             </div>
             <div class="group flex flex-col gap-5 rounded-2xl border border-slate-200 p-7 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5 transition-all">
@@ -160,7 +160,7 @@
                     <h3 class="text-slate-900 text-xl font-bold mb-2">Jalur Karir</h3>
                     <p class="text-slate-500 text-sm leading-relaxed">Intern terbaik mendapatkan pertimbangan preferensial untuk posisi junior tetap dalam layanan sipil.</p>
                 </div>
-            </div>
+            </div> -->
         </div>
     </div>
 </section>
@@ -178,8 +178,26 @@
                     </div>
                     <div>
                         <h2 class="text-white text-2xl font-bold">Formulir Pendaftaran</h2>
-                        <p class="text-blue-100 text-sm">Isi data berikut untuk mendaftar Cohort 2024</p>
+                        <p class="text-blue-100 text-sm">Isi data berikut untuk mendaftar Magang</p>
                     </div>
+                </div>
+            </div>
+
+            {{-- Info Kuota --}}
+            <div class="px-8 py-3 {{ $pendaftaranTutup ? 'bg-red-50 border-b border-red-200' : 'bg-green-50 border-b border-green-200' }}">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-lg {{ $pendaftaranTutup ? 'text-red-500' : 'text-green-500' }}">
+                            {{ $pendaftaranTutup ? 'lock' : 'how_to_reg' }}
+                        </span>
+                        <span class="text-sm font-semibold {{ $pendaftaranTutup ? 'text-red-700' : 'text-green-700' }}">
+                            {{ $pendaftaranTutup ? 'Pendaftaran Ditutup — Kuota Penuh' : 'Pendaftaran Masih Dibuka' }}
+                        </span>
+                    </div>
+                    <span class="text-xs font-bold px-3 py-1 rounded-full {{ $pendaftaranTutup ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700' }}">
+                        {{ $jumlahPendaftar }} / {{ $batasPendaftar }} pendaftar
+                        {{ $pendaftaranTutup ? '' : '· Sisa ' . $sisaKuota . ' slot' }}
+                    </span>
                 </div>
             </div>
 
@@ -207,7 +225,7 @@
                     </div>
                     <div class="flex flex-col gap-1.5">
                         <label class="text-sm font-semibold text-slate-700">Email <span class="text-red-500">*</span></label>
-                        <input type="email" name="email" value="{{ old('email') }}" placeholder="email@universitas.ac.id"
+                        <input type="email" name="email" value="{{ old('email') }}" placeholder="email@gmail.com"
                                class="w-full rounded-xl border-slate-300 focus:border-primary focus:ring-primary h-11 px-4 text-sm @error('email') border-red-400 @enderror"/>
                         @error('email')<p class="text-xs text-red-600">{{ $message }}</p>@enderror
                     </div>
@@ -221,7 +239,7 @@
                         <label class="text-sm font-semibold text-slate-700">Jurusan / Program Studi <span class="text-red-500">*</span></label>
                         <select name="jurusan" class="w-full rounded-xl border-slate-300 focus:border-primary focus:ring-primary h-11 px-4 text-sm @error('jurusan') border-red-400 @enderror">
                             <option value="">Pilih Jurusan</option>
-                            <option value="Ilmu Politik" {{ old('jurusan') === 'Ilmu Politik' ? 'selected' : '' }}>Ilmu Politik</option>
+                            <option value="Sistem Informasi" {{ old('jurusan') === 'Sistem informasi' ? 'selected' : '' }}>Sistem informasi</option>
                             <option value="Administrasi Negara" {{ old('jurusan') === 'Administrasi Negara' ? 'selected' : '' }}>Administrasi Negara</option>
                             <option value="Ekonomi" {{ old('jurusan') === 'Ekonomi' ? 'selected' : '' }}>Ekonomi</option>
                             <option value="Hukum" {{ old('jurusan') === 'Hukum' ? 'selected' : '' }}>Hukum</option>
@@ -265,9 +283,16 @@
                 </div>
                 @error('setuju')<p class="text-xs text-red-600">{{ $message }}</p>@enderror
 
-                <button type="submit" class="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-primary/25 text-base">
-                    <span class="material-symbols-outlined text-xl">send</span>
-                    Kirim Pendaftaran
+                <button type="submit" 
+                    {{ $pendaftaranTutup ? 'disabled' : '' }}
+                    class="w-full flex items-center justify-center gap-2 font-bold py-4 rounded-xl transition-all text-base
+                    {{ $pendaftaranTutup 
+                        ? 'bg-slate-300 text-slate-500 cursor-not-allowed' 
+                        : 'bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/25' }}">
+                    <span class="material-symbols-outlined text-xl">
+                        {{ $pendaftaranTutup ? 'lock' : 'send' }}
+                    </span>
+                    {{ $pendaftaranTutup ? 'Pendaftaran Ditutup' : 'Kirim Pendaftaran' }}
                 </button>
             </form>
         </div>
@@ -279,16 +304,16 @@
     <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10">
         <div class="md:col-span-2">
             <div class="flex items-center gap-2 text-primary mb-4">
-                <div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white">
-                    <span class="material-symbols-outlined text-base">account_balance</span>
-                </div>
-                <h2 class="text-slate-900 text-lg font-bold">SiMagang</h2>
+                <div class="h-14 w-auto">
+                <img src="{{ asset('images/ptsp.png') }}" alt="PTSP Jateng" class="h-full w-auto object-contain">
+            </div>
+                <h2 class="text-slate-900 text-lg font-bold">Magang DPMPTSP</h2>
             </div>
             <p class="text-slate-500 text-sm leading-relaxed max-w-sm">
-                Inisiatif resmi Departemen Pelayanan Publik dan Administrasi untuk pengembangan SDM aparatur sipil negara.
+                Program Magang DPMPTSP untuk pengembangan skill para mahasiswa.
             </p>
         </div>
-        <div>
+        <!--<div>
             <h4 class="text-slate-900 font-bold mb-5 text-sm uppercase tracking-wider">Tautan Cepat</h4>
             <ul class="space-y-3 text-sm text-slate-500">
                 <li><a href="#tentang" class="hover:text-primary transition-colors">Panduan Program</a></li>
@@ -296,27 +321,27 @@
                 <li><a href="#" class="hover:text-primary transition-colors">Kisah Sukses</a></li>
                 <li><a href="#" class="hover:text-primary transition-colors">FAQ</a></li>
             </ul>
-        </div>
+        </div>-->
         <div>
             <h4 class="text-slate-900 font-bold mb-5 text-sm uppercase tracking-wider">Kontak</h4>
             <ul class="space-y-3 text-sm text-slate-500">
                 <li class="flex items-center gap-2">
                     <span class="material-symbols-outlined text-base text-primary">mail</span>
-                    penerimaan@simagang.go.id
+                    penerimaan@magangdpmptsp.go.id
                 </li>
                 <li class="flex items-center gap-2">
                     <span class="material-symbols-outlined text-base text-primary">call</span>
-                    1-800-SIMAGANG
+                    1-800-MagangDPMPTSP
                 </li>
             </ul>
         </div>
     </div>
     <div class="max-w-6xl mx-auto mt-10 pt-8 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-400">
-        <p>© {{ date('Y') }} Program Magang Pemerintah Nasional. Hak cipta dilindungi.</p>
-        <div class="flex items-center gap-2">
+        <p>© {{ date('Y') }} Program Magang DPMPTSP. Hak cipta dilindungi.</p>
+        <!--<div class="flex items-center gap-2">
             <span class="material-symbols-outlined text-sm text-green-500">verified_user</span>
             Sistem terenkripsi dan aman
-        </div>
+        </div>-->
     </div>
 </footer>
 

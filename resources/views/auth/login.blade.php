@@ -8,15 +8,15 @@
     {{-- Header --}}
     <header class="flex items-center justify-between px-6 md:px-10 py-4 bg-white border-b border-slate-200">
         <a href="{{ route('beranda') }}" class="flex items-center gap-3 text-primary">
-            <div class="w-9 h-9 rounded-xl bg-primary flex items-center justify-center text-white shadow-md shadow-primary/20">
-                <span class="material-symbols-outlined text-lg">account_balance</span>
+            <div class="h-14 w-auto">
+            <img src="{{ asset('images/ptsp.png') }}" alt="PTSP Jateng" class="h-full w-auto object-contain">
             </div>
-            <h2 class="text-slate-900 text-xl font-bold">SiMagang</h2>
+            <h2 class="text-slate-900 text-xl font-bold">Magang DPMPTSP</h2>
         </a>
-        <div class="flex items-center gap-6">
+        <!--<div class="flex items-center gap-6">
             <a href="#" class="text-slate-500 text-sm hover:text-primary transition-colors">Pusat Bantuan</a>
             <a href="#" class="text-slate-500 text-sm hover:text-primary transition-colors">Dukungan Sistem</a>
-        </div>
+        </div>-->
     </header>
 
     {{-- Main --}}
@@ -30,7 +30,7 @@
                         <span class="material-symbols-outlined text-3xl">lock_person</span>
                     </div>
                     <h1 class="text-slate-900 text-3xl font-black tracking-tight">Selamat Datang</h1>
-                    <p class="text-slate-500 mt-1.5">Portal aman untuk Mahasiswa & Administrator</p>
+                    <p class="text-slate-500 mt-1.5">Portal aman untuk Mahasiswa</p>
                 </div>
 
                 @if ($errors->any())
@@ -79,7 +79,7 @@
                             <input type="checkbox" name="remember" class="rounded border-slate-300 text-primary focus:ring-primary"/>
                             <span class="text-sm text-slate-600">Ingat saya</span>
                         </label>
-                        <a href="#" class="text-primary text-sm font-semibold hover:underline">Lupa Password?</a>
+                        <a href="https://wa.me/6282328280963" class="text-primary text-sm font-semibold hover:underline">Lupa Password?</a>
                     </div>
 
                     <button type="submit" class="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-primary/25">
@@ -93,7 +93,7 @@
                     <div class="flex items-start gap-3 p-4 bg-primary/5 rounded-xl border border-primary/10">
                         <span class="material-symbols-outlined text-primary text-xl mt-0.5">security</span>
                         <p class="text-xs text-slate-500 leading-relaxed">
-                            Ini adalah sistem pemerintah yang aman. Akses tidak sah dilarang keras dan dapat dikenakan tindakan hukum.
+                            <!--Ini adalah sistem pemerintah yang aman.--> Akses tidak sah dilarang keras dan dapat dikenakan tindakan hukum.
                         </p>
                     </div>
                     <p class="text-center text-xs text-slate-400 mt-4">
@@ -106,7 +106,7 @@
     </main>
 
     <footer class="p-6 text-center">
-        <p class="text-slate-400 text-xs">© {{ date('Y') }} SiMagang — Sistem Manajemen Magang Pusat. Hak cipta dilindungi.</p>
+        <p class="text-slate-400 text-xs">© {{ date('Y') }} MagangDPMPTSP — Sistem Manajemen Magang Pusat. Hak cipta dilindungi.</p>
     </footer>
 </div>
 @endsection

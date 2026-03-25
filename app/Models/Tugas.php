@@ -15,8 +15,8 @@ class Tugas extends Model
         'judul',
         'deskripsi',
         'deadline',
-        'tipe',       // 'laporan' | 'proyek' | 'evaluasi' | 'lainnya'
-        'file_tugas', // file template dari admin (opsional)
+        'tipe',
+        'file_tugas',
         'is_aktif',
     ];
 
@@ -25,13 +25,17 @@ class Tugas extends Model
         'is_aktif' => 'boolean',
     ];
 
-    // ── Relasi ─────────────────────────────────────────────────────────────
+    // Relasi ke mahasiswa yang ditugaskan
+    public function mahasiswas()
+    {
+        return $this->belongsToMany(User::class, 'tugas_mahasiswa');
+    }
+
     public function pengumpulans()
     {
         return $this->hasMany(PengumpulanTugas::class);
     }
 
-    // ── Helper ─────────────────────────────────────────────────────────────
     public function isOverdue(): bool
     {
         return $this->deadline->isPast();

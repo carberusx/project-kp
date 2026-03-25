@@ -30,6 +30,17 @@
                     @if($t->deskripsi)
                     <p class="text-sm text-slate-500 mb-2">{{ Str::limit($t->deskripsi, 120) }}</p>
                     @endif
+
+		{{-- Tombol download file dari admin --}}
+			@if($t->file_tugas)
+			<a href="{{ asset('storage/' . $t->file_tugas) }}" 
+  				target="_blank"
+  				class="inline-flex items-center gap-1.5 mt-1 mb-2 text-xs font-semibold text-primary bg-primary/10 hover:bg-primary/20 px-3 py-1.5 rounded-lg transition-colors">
+    				<span class="material-symbols-outlined text-sm">download</span>
+    				Download File Lampiran
+			</a>
+			@endif
+
                     <div class="flex items-center gap-1 text-xs text-slate-500">
                         <span class="material-symbols-outlined text-sm">schedule</span>
                         Deadline: <strong class="{{ $t->isOverdue() && !$t->pengumpulan ? 'text-red-600' : '' }}">
@@ -55,14 +66,37 @@
 
             <div class="flex-shrink-0">
                 @if($t->pengumpulan)
-                    <span class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-bold rounded-xl
-                        {{ $t->pengumpulan->status === 'dinilai' ? 'bg-green-100 text-green-700' :
-                           ($t->pengumpulan->status === 'revisi' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700') }}">
-                        <span class="material-symbols-outlined text-base">
-                            {{ $t->pengumpulan->status === 'dinilai' ? 'grade' : 'check_circle' }}
+                    @if($t->pengumpulan->status === 'revisi')
+                        {{-- Status revisi: tampilkan badge + tombol kirim ulang --}}
+                        <div class="flex flex-col items-end gap-2">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-full bg-amber-100 text-amber-700">
+                                <span class="material-symbols-outlined text-sm">rate_review</span>
+                                Perlu Revisi
+                            </span>
+                            <a href="{{ route('mahasiswa.tugas.upload', $t) }}"
+                            class="inline-flex items-center gap-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-xl text-xs transition-all shadow-sm">
+                                <span class="material-symbols-outlined text-sm">upload_file</span>
+                                Kirim Ulang
+                            </a>
+                        </div>
+                    @elseif($t->pengumpulan->status === 'dinilai')
+                        {{-- Sudah dinilai --}}
+                        <div class="flex flex-col items-end gap-1">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-full bg-green-100 text-green-700">
+                                <span class="material-symbols-outlined text-sm">grade</span>
+                                Dinilai
+                            </span>
+                            @if($t->pengumpulan->nilai)
+                            <span class="text-lg font-black text-primary">{{ $t->pengumpulan->nilai }}</span>
+                            @endif
+                        </div>
+                    @else
+                        {{-- Sudah dikumpulkan, menunggu penilaian --}}
+                        <span class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-bold rounded-xl bg-blue-100 text-blue-700">
+                            <span class="material-symbols-outlined text-base">check_circle</span>
+                            Dikumpulkan
                         </span>
-                        {{ $t->pengumpulan->status_label }}
-                    </span>
+                    @endif
                 @elseif(!$t->isOverdue())
                     <a href="{{ route('mahasiswa.tugas.upload', $t) }}"
                        class="inline-flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-white font-bold py-2.5 px-5 rounded-xl text-sm transition-all shadow-md shadow-primary/20">

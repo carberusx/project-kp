@@ -14,56 +14,71 @@
             Absensi Hari Ini — {{ now()->isoFormat('dddd, D MMMM Y') }}
         </h3>
 
+        {{-- Info Waktu --}}
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            <div class="bg-slate-50 rounded-xl p-4 text-center">
+            <div class="bg-slate-50 rounded-xl p-4 border border-slate-100">
                 <p class="text-xs text-slate-500 mb-1">Jam Sekarang</p>
                 <p class="text-xl font-bold" id="clock">{{ now()->format('H:i:s') }}</p>
             </div>
-            <div class="bg-slate-50 rounded-xl p-4 text-center">
+            <div class="bg-slate-50 rounded-xl p-4 border border-slate-100">
                 <p class="text-xs text-slate-500 mb-1">Status</p>
                 <p class="text-sm font-bold {{ $absensiHariIni ? 'text-green-600' : 'text-amber-600' }}">
-                    {{ $absensiHariIni ? 'Sudah Absen' : 'Belum Absen' }}
+                    {{ $absensiHariIni ? ucfirst($absensiHariIni->status) : 'Belum Absen' }}
                 </p>
             </div>
-            @if($absensiHariIni)
-            <div class="bg-green-50 rounded-xl p-4 text-center">
+            <div class="bg-green-50 rounded-xl p-4 border border-green-100">
                 <p class="text-xs text-slate-500 mb-1">Jam Masuk</p>
-                <p class="text-xl font-bold text-green-700">{{ \Carbon\Carbon::parse($absensiHariIni->jam_masuk)->format('H:i') }}</p>
+                <p class="text-xl font-bold text-green-700">
+                    {{ $absensiHariIni?->jam_masuk ? \Carbon\Carbon::parse($absensiHariIni->jam_masuk)->format('H:i') : '—' }}
+                </p>
             </div>
-            <div class="bg-blue-50 rounded-xl p-4 text-center">
+            <div class="bg-blue-50 rounded-xl p-4 border border-blue-100">
                 <p class="text-xs text-slate-500 mb-1">Jam Pulang</p>
                 <p class="text-xl font-bold text-blue-700">
-                    {{ $absensiHariIni->jam_keluar ? \Carbon\Carbon::parse($absensiHariIni->jam_keluar)->format('H:i') : '—' }}
+                    {{ $absensiHariIni?->jam_keluar ? \Carbon\Carbon::parse($absensiHariIni->jam_keluar)->format('H:i') : '—' }}
                 </p>
             </div>
-            @endif
         </div>
 
+        {{-- Tombol Aksi --}}
         <div class="flex flex-wrap gap-3">
             @if(!$absensiHariIni)
                 <form action="{{ route('mahasiswa.absensi.checkin') }}" method="POST">
                     @csrf
-                    <button type="submit" class="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white font-bold py-3 px-7 rounded-xl transition-all shadow-md shadow-primary/20">
+                    <button type="submit" class="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-md shadow-primary/20">
                         <span class="material-symbols-outlined">login</span>
-                        Tandai Hadir Sekarang
+                        Tandai Hadir
                     </button>
                 </form>
-            @elseif(!$absensiHariIni->jam_keluar)
+                <button onclick="document.getElementById('modal-izin-sakit').classList.remove('hidden')"
+                    class="flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-xl transition-all">
+                    <span class="material-symbols-outlined">event_busy</span>
+                    Izin / Sakit
+                </button>
+
+            @elseif($absensiHariIni->status === 'hadir' && !$absensiHariIni->jam_keluar)
                 <div class="flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 px-5 py-3 rounded-xl font-semibold text-sm">
                     <span class="material-symbols-outlined">check_circle</span>
-                    Sudah absen masuk
+                    Masuk pukul {{ \Carbon\Carbon::parse($absensiHariIni->jam_masuk)->format('H:i') }}
                 </div>
                 <form action="{{ route('mahasiswa.absensi.checkout') }}" method="POST">
                     @csrf
-                    <button type="submit" class="flex items-center gap-2 border border-slate-300 text-slate-700 font-bold py-3 px-7 rounded-xl hover:bg-slate-50 transition-all">
+                    <button type="submit" class="flex items-center gap-2 border border-slate-300 text-slate-700 font-bold py-3 px-6 rounded-xl hover:bg-slate-50 transition-all">
                         <span class="material-symbols-outlined">logout</span>
                         Tandai Pulang
                     </button>
                 </form>
+
             @else
                 <div class="flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 px-5 py-3 rounded-xl font-semibold text-sm">
                     <span class="material-symbols-outlined">task_alt</span>
-                    Absensi hari ini lengkap — Durasi: {{ $absensiHariIni->durasi ?? '—' }}
+                    @if($absensiHariIni->status === 'hadir')
+                        Absensi lengkap — Durasi: {{ $absensiHariIni->durasi ?? '—' }}
+                    @elseif($absensiHariIni->status === 'izin')
+                        Izin hari ini telah tercatat
+                    @elseif($absensiHariIni->status === 'sakit')
+                        Sakit hari ini telah tercatat
+                    @endif
                 </div>
             @endif
         </div>
@@ -144,6 +159,60 @@
     </div>
 
 </div>
+
+{{-- Modal Izin / Sakit --}}
+<div id="modal-izin-sakit" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
+        <div class="flex items-center justify-between mb-5">
+            <h3 class="font-bold text-lg text-slate-900">Form Izin / Sakit</h3>
+            <button onclick="document.getElementById('modal-izin-sakit').classList.add('hidden')"
+                class="text-slate-400 hover:text-slate-600">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <form action="{{ route('mahasiswa.absensi.izinsakit') }}" method="POST" class="space-y-4">
+            @csrf
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">Jenis Ketidakhadiran</label>
+                <div class="grid grid-cols-2 gap-3">
+                    <label class="cursor-pointer">
+                        <input type="radio" name="status" value="izin" class="peer hidden" required/>
+                        <div class="flex items-center gap-2 p-3 border-2 border-slate-200 rounded-xl peer-checked:border-amber-500 peer-checked:bg-amber-50 transition-all">
+                            <span class="material-symbols-outlined text-amber-500">event_busy</span>
+                            <span class="text-sm font-semibold">Izin</span>
+                        </div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="status" value="sakit" class="peer hidden"/>
+                        <div class="flex items-center gap-2 p-3 border-2 border-slate-200 rounded-xl peer-checked:border-blue-500 peer-checked:bg-blue-50 transition-all">
+                            <span class="material-symbols-outlined text-blue-500">medical_services</span>
+                            <span class="text-sm font-semibold">Sakit</span>
+                        </div>
+                    </label>
+                </div>
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">Keterangan <span class="text-red-500">*</span></label>
+                <textarea name="keterangan" rows="3" required
+                    placeholder="Jelaskan alasan izin/sakit Anda..."
+                    class="w-full rounded-xl border-slate-300 focus:border-primary focus:ring-primary p-3 text-sm resize-none"></textarea>
+            </div>
+            <div class="flex gap-3 pt-1">
+                <button type="submit"
+                    class="flex-1 flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-xl transition-all">
+                    <span class="material-symbols-outlined">send</span>
+                    Kirim
+                </button>
+                <button type="button"
+                    onclick="document.getElementById('modal-izin-sakit').classList.add('hidden')"
+                    class="flex-1 border border-slate-300 text-slate-700 font-bold py-3 rounded-xl hover:bg-slate-50 transition-all">
+                    Batal
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 @endsection
 
 @section('scripts')

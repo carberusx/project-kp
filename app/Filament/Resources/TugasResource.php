@@ -28,7 +28,7 @@ class TugasResource extends Resource
                 ->maxLength(255)
                 ->columnSpanFull(),
             Forms\Components\Textarea::make('deskripsi')
-                ->label('Deskripsi')
+                ->label('Deskripsi / Instruksi')
                 ->rows(4)
                 ->columnSpanFull(),
             Forms\Components\Select::make('tipe')
@@ -46,6 +46,28 @@ class TugasResource extends Resource
             Forms\Components\Toggle::make('is_aktif')
                 ->label('Aktif')
                 ->default(true),
+            Forms\Components\FileUpload::make('file_tugas')
+                ->label('File Lampiran untuk Mahasiswa')
+                ->disk('public')
+                ->directory('tugas/lampiran')
+                ->acceptedFileTypes([
+                    'application/pdf',
+                    'application/msword',
+                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                    'application/zip',
+                ])
+                ->maxSize(10240)
+                ->downloadable()
+                ->helperText('Upload file instruksi/template untuk mahasiswa (PDF, DOCX, ZIP maks 10MB)')
+                ->columnSpanFull(),
+            Forms\Components\Select::make('mahasiswas')
+                ->label('Assign ke Mahasiswa')
+                ->relationship('mahasiswas', 'name')
+                ->multiple()
+                ->preload()
+                ->searchable()
+                ->helperText('Pilih mahasiswa yang akan mendapat tugas ini')
+                ->columnSpanFull(),
         ])->columns(2);
     }
 
@@ -74,6 +96,11 @@ class TugasResource extends Resource
                     ->label('Dikumpulkan')
                     ->counts('pengumpulans')
                     ->suffix(' mahasiswa'),
+                Tables\Columns\IconColumn::make('file_tugas')
+                    ->label('Ada Lampiran')
+                    ->boolean()
+                    ->trueIcon('heroicon-o-paper-clip')
+                    ->falseIcon('heroicon-o-x-mark'),
                 Tables\Columns\IconColumn::make('is_aktif')
                     ->label('Aktif')
                     ->boolean(),
