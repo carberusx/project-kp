@@ -43,6 +43,13 @@ class PendaftaranResource extends Resource
                         ->label('Email')
                         ->email()
                         ->required(),
+                    Forms\Components\TextInput::make('nim')
+                        ->label('NIM')
+                        ->maxLength(50),
+                    Forms\Components\TextInput::make('no_telpon')
+                        ->label('Nomor Telepon')
+                        ->tel()
+                        ->maxLength(20),
                     Forms\Components\TextInput::make('universitas')
                         ->label('Universitas/Institusi')
                         ->required(),
@@ -88,6 +95,13 @@ class PendaftaranResource extends Resource
                 Tables\Columns\TextColumn::make('email')
                     ->label('Email')
                     ->searchable(),
+                Tables\Columns\TextColumn::make('nim')
+                    ->label('NIM')
+                    ->searchable()
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('no_telpon')
+                    ->label('No. Telpon')
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('universitas')
                     ->label('Universitas')
                     ->searchable()
@@ -127,16 +141,42 @@ class PendaftaranResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\Action::make('terima')
-   			 ->label('Terima')
-   			 ->icon('heroicon-o-check-circle')
-   			 ->color('success')
-   			 ->requiresConfirmation()
-   			 ->modalHeading('Terima Pendaftar')
-  	 		 ->modalDescription('Akun login akan otomatis dibuat dan password sementara akan tersimpan di catatan.')
-   			 ->action(function (Pendaftaran $record) {
-   			     $record->update(['status' => 'diterima']);
-   			 })
-   			 ->visible(fn(Pendaftaran $record) => $record->status === 'menunggu'),
+                    ->label('Terima')
+                    ->icon('heroicon-o-check-circle')
+                    ->color('success')
+                    ->requiresConfirmation()
+                    ->modalHeading('Terima Pendaftar')
+                    ->modalDescription('Akun login akan otomatis dibuat dan password sementara akan tersimpan di catatan.')
+                    ->action(function (Pendaftaran $record) {
+                        // Generate password sementara
+                        $tempPassword = \Illuminate\Support\Str::random(8);
+
+                        // Buat akun mahasiswa dengan data dari pendaftaran
+                        $user = \App\Models\User::create([
+                            'name'        => $record->nama_lengkap,
+                            'email'       => $record->email,
+                            'password'    => \Illuminate\Support\Facades\Hash::make($tempPassword),
+                            'role'        => 'mahasiswa',
+                            'nim'         => $record->nim,
+                            'universitas' => $record->universitas,
+                            'jurusan'     => $record->jurusan,
+                            'telepon'     => $record->no_telpon,
+                        ]);
+
+                        // Update pendaftaran: status diterima, link user, simpan password di catatan
+                        $record->update([
+                            'status'        => 'diterima',
+                            'user_id'       => $user->id,
+                            'catatan_admin' => 'Akun dibuat otomatis. Password sementara: ' . $tempPassword,
+                        ]);
+
+                        \Filament\Notifications\Notification::make()
+                            ->title('Pendaftar Diterima')
+                            ->body("Akun mahasiswa untuk {$record->nama_lengkap} berhasil dibuat. Password: {$tempPassword}")
+                            ->success()
+                            ->send();
+                    })
+                    ->visible(fn(Pendaftaran $record) => $record->status === 'menunggu'),
                 Tables\Actions\Action::make('tolak')
                     ->label('Tolak')
                     ->icon('heroicon-o-x-circle')

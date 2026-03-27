@@ -15,6 +15,8 @@ class Pendaftaran extends Model
         'user_id',
         'nama_lengkap',
         'email',
+        'nim',
+        'no_telpon',
         'universitas',
         'jurusan',
         'motivasi',
@@ -30,6 +32,17 @@ class Pendaftaran extends Model
         'tanggal_mulai'  => 'date',
         'tanggal_selesai' => 'date',
     ];
+
+    // ── Boot: cascade delete user ────────────────────────────────────────
+    protected static function booted(): void
+    {
+        static::deleting(function (Pendaftaran $pendaftaran) {
+            // Hapus akun mahasiswa yang terkait jika ada
+            if ($pendaftaran->user_id && $pendaftaran->user) {
+                $pendaftaran->user->delete();
+            }
+        });
+    }
 
     // ── Relasi ─────────────────────────────────────────────────────────────
     public function user()

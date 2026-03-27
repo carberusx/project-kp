@@ -39,6 +39,17 @@
         </div>
         @endif
 
+        {{-- Alert error --}}
+        @if (session('error'))
+        <div class="mb-8 flex items-start gap-3 p-5 bg-red-50 border border-red-200 text-red-800 rounded-2xl">
+            <span class="material-symbols-outlined text-red-600 text-2xl">error</span>
+            <div>
+                <p class="font-bold text-sm">Pendaftaran Gagal!</p>
+                <p class="text-sm mt-0.5">{{ session('error') }}</p>
+            </div>
+        </div>
+        @endif
+
         <div class="flex flex-col gap-10 lg:flex-row items-center">
             {{-- Left: Copy --}}
             <div class="w-full lg:w-1/2 flex flex-col gap-6">
@@ -230,6 +241,18 @@
                         @error('email')<p class="text-xs text-red-600">{{ $message }}</p>@enderror
                     </div>
                     <div class="flex flex-col gap-1.5">
+                        <label class="text-sm font-semibold text-slate-700">NIM <span class="text-red-500">*</span></label>
+                        <input type="text" name="nim" value="{{ old('nim') }}" placeholder="Nomor Induk Mahasiswa"
+                               class="w-full rounded-xl border-slate-300 focus:border-primary focus:ring-primary h-11 px-4 text-sm @error('nim') border-red-400 @enderror"/>
+                        @error('nim')<p class="text-xs text-red-600">{{ $message }}</p>@enderror
+                    </div>
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-sm font-semibold text-slate-700">Nomor Telepon <span class="text-red-500">*</span></label>
+                        <input type="tel" name="no_telpon" value="{{ old('no_telpon') }}" placeholder="08xxxxxxxxxx"
+                               class="w-full rounded-xl border-slate-300 focus:border-primary focus:ring-primary h-11 px-4 text-sm @error('no_telpon') border-red-400 @enderror"/>
+                        @error('no_telpon')<p class="text-xs text-red-600">{{ $message }}</p>@enderror
+                    </div>
+                    <div class="flex flex-col gap-1.5">
                         <label class="text-sm font-semibold text-slate-700">Universitas / Institusi <span class="text-red-500">*</span></label>
                         <input type="text" name="universitas" value="{{ old('universitas') }}" placeholder="Universitas Indonesia"
                                class="w-full rounded-xl border-slate-300 focus:border-primary focus:ring-primary h-11 px-4 text-sm @error('universitas') border-red-400 @enderror"/>
@@ -274,20 +297,29 @@
                 </div>
 
                 {{-- Persetujuan --}}
-                <div class="flex items-start gap-3 p-4 bg-slate-50 rounded-xl border border-slate-200">
+                <div id="box-setuju" class="flex items-start gap-3 p-4 rounded-xl border transition-all
+                    {{ $errors->has('setuju') ? 'bg-red-50 border-red-300' : 'bg-slate-50 border-slate-200' }}">
                     <input type="checkbox" name="setuju" id="setuju" value="1"
-                           class="mt-0.5 rounded border-slate-300 text-primary focus:ring-primary {{ $errors->has('setuju') ? 'border-red-400' : '' }}"/>
+                        onchange="handleSetuju(this)"
+                        class="mt-0.5 rounded border-slate-300 text-primary focus:ring-primary
+                                {{ $errors->has('setuju') ? 'border-red-400' : '' }}"/>
                     <label for="setuju" class="text-sm text-slate-600 leading-relaxed cursor-pointer">
                         Saya menyatakan bahwa informasi yang diberikan adalah benar dan lengkap sesuai pengetahuan saya. Saya memahami bahwa pernyataan palsu dapat mendiskualifikasi pendaftaran saya.
                     </label>
                 </div>
-                @error('setuju')<p class="text-xs text-red-600">{{ $message }}</p>@enderror
 
-                <button type="submit" 
+                {{-- Warning belum centang --}}
+                <div id="warning-setuju" class="{{ $errors->has('setuju') ? 'flex' : 'hidden' }} items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
+                    <span class="material-symbols-outlined text-red-500 flex-shrink-0">warning</span>
+                    <span>Anda harus mencentang pernyataan di atas sebelum mengirim formulir.</span>
+                </div>
+
+                <button type="submit"
+                    onclick="return checkSetuju()"
                     {{ $pendaftaranTutup ? 'disabled' : '' }}
                     class="w-full flex items-center justify-center gap-2 font-bold py-4 rounded-xl transition-all text-base
-                    {{ $pendaftaranTutup 
-                        ? 'bg-slate-300 text-slate-500 cursor-not-allowed' 
+                    {{ $pendaftaranTutup
+                        ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
                         : 'bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/25' }}">
                     <span class="material-symbols-outlined text-xl">
                         {{ $pendaftaranTutup ? 'lock' : 'send' }}
@@ -346,4 +378,42 @@
 </footer>
 
 </div>
+@endsection
+
+@section('scripts')
+<script> 
+    function handleSetuju(checkbox) {
+        const box     = document.getElementById('box-setuju');
+        const warning = document.getElementById('warning-setuju');
+
+        if (checkbox.checked) {
+            box.classList.remove('bg-red-50', 'border-red-300');
+            box.classList.add('bg-green-50', 'border-green-300');
+            warning.classList.add('hidden');
+            warning.classList.remove('flex');
+        } else {
+            box.classList.remove('bg-green-50', 'border-green-300');
+            box.classList.add('bg-slate-50', 'border-slate-200');
+        }
+    }
+
+    function checkSetuju() {
+        const checkbox = document.getElementById('setuju');
+        const box      = document.getElementById('box-setuju');
+        const warning  = document.getElementById('warning-setuju');
+
+        if (!checkbox.checked) {
+            // Tampilkan warning
+            box.classList.remove('bg-slate-50', 'border-slate-200', 'bg-green-50', 'border-green-300');
+            box.classList.add('bg-red-50', 'border-red-300');
+            warning.classList.remove('hidden');
+            warning.classList.add('flex');
+
+            // Scroll ke warning
+            warning.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return false;
+        }
+        return true;
+    }
+</script>
 @endsection
