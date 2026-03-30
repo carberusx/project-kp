@@ -277,14 +277,21 @@
                 {{-- Upload CV --}}
                 <div class="flex flex-col gap-1.5">
                     <label class="text-sm font-semibold text-slate-700">Upload CV & Transkrip (opsional)</label>
-                    <div class="relative border-2 border-dashed border-slate-300 rounded-xl hover:border-primary transition-colors cursor-pointer bg-slate-50 hover:bg-primary/5">
-                        <div class="flex flex-col items-center justify-center py-8">
+                    <label class="relative border-2 border-dashed border-slate-300 rounded-xl hover:border-primary transition-colors cursor-pointer bg-slate-50 hover:bg-primary/5 block">
+                        <div id="upload-placeholder" class="flex flex-col items-center justify-center py-8 pointer-events-none">
                             <span class="material-symbols-outlined text-3xl text-slate-400 mb-2">upload_file</span>
                             <p class="text-sm font-medium text-slate-600">Klik untuk upload atau drag & drop</p>
                             <p class="text-xs text-slate-400 mt-1">PDF, DOCX, ZIP hingga 10MB</p>
                         </div>
-                        <input type="file" name="file_dokumen" accept=".pdf,.doc,.docx,.zip" class="absolute inset-0 opacity-0 cursor-pointer"/>
-                    </div>
+                        <div id="upload-selected" class="hidden flex-col items-center justify-center py-8 pointer-events-none">
+                            <span class="material-symbols-outlined text-3xl text-green-500 mb-2">check_circle</span>
+                            <p id="upload-filename" class="text-sm font-medium text-green-700"></p>
+                            <p class="text-xs text-slate-400 mt-1">Klik untuk mengganti file</p>
+                        </div>
+                        <input type="file" name="file_dokumen" accept=".pdf,.doc,.docx,.zip"
+                               onchange="handleFileSelect(this)"
+                               class="absolute inset-0 opacity-0 cursor-pointer z-10"/>
+                    </label>
                     @error('file_dokumen')<p class="text-xs text-red-600">{{ $message }}</p>@enderror
                 </div>
 
@@ -414,6 +421,27 @@
             return false;
         }
         return true;
+    }
+
+    function handleFileSelect(input) {
+        const placeholder = document.getElementById('upload-placeholder');
+        const selected    = document.getElementById('upload-selected');
+        const filename    = document.getElementById('upload-filename');
+
+        if (input.files && input.files.length > 0) {
+            const file = input.files[0];
+            const sizeMB = (file.size / 1024 / 1024).toFixed(2);
+            filename.textContent = file.name + ' (' + sizeMB + ' MB)';
+            placeholder.classList.add('hidden');
+            placeholder.classList.remove('flex');
+            selected.classList.remove('hidden');
+            selected.classList.add('flex');
+        } else {
+            placeholder.classList.remove('hidden');
+            placeholder.classList.add('flex');
+            selected.classList.add('hidden');
+            selected.classList.remove('flex');
+        }
     }
 </script>
 @endsection

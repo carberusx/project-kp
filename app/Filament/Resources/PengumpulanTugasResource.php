@@ -114,12 +114,7 @@ class PengumpulanTugasResource extends Resource
                         'revisi'      => 'Perlu Revisi',
                         default       => $state,
                     }),
-                Tables\Columns\TextColumn::make('file_path')
-   			 ->label('File')
-   			 ->formatStateUsing(fn($state) => $state ? basename($state) : '—')
-   			 ->url(fn($record) => $record->file_path ? asset('storage/' . $record->file_path) : null)
-   			 ->openUrlInNewTab()
-   			 ->color('primary'),
+
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
@@ -137,8 +132,12 @@ class PengumpulanTugasResource extends Resource
    		 ->label('Download')
    		 ->icon('heroicon-o-arrow-down-tray')
    		 ->color('success')
-   		 ->url(fn(PengumpulanTugas $record) => asset('storage/' . $record->file_path))
-  		 ->openUrlInNewTab()
+   		 ->action(function (PengumpulanTugas $record) {
+   		     return response()->download(
+   		         storage_path('app/public/' . $record->file_path),
+   		         basename($record->file_path)
+   		     );
+   		 })
    		 ->visible(fn(PengumpulanTugas $record) => $record->file_path !== null),
                 Tables\Actions\Action::make('nilai')
                     ->label('Beri Nilai')
