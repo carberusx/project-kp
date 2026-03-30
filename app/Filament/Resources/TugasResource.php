@@ -62,7 +62,7 @@ class TugasResource extends Resource
                 ->columnSpanFull(),
             Forms\Components\Select::make('mahasiswas')
                 ->label('Assign ke Mahasiswa')
-                ->relationship('mahasiswas', 'name')
+                ->relationship('mahasiswas', 'name', fn ($query) => $query->where('role', 'mahasiswa'))
                 ->multiple()
                 ->preload()
                 ->searchable()
