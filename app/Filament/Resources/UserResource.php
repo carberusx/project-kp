@@ -92,6 +92,10 @@ class UserResource extends Resource
                     ->label('Jurusan')
                     ->default('—')
                     ->toggleable(),
+                Tables\Columns\TextColumn::make('telepon')
+                    ->label('No. Telepon')
+                    ->default('—')
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Dibuat')
                     ->date('d M Y')

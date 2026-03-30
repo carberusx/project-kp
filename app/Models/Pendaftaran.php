@@ -33,11 +33,23 @@ class Pendaftaran extends Model
         'tanggal_selesai' => 'date',
     ];
 
-    // ── Boot: cascade delete user ────────────────────────────────────────
+    // ── Boot: auto-sync ke user & cascade delete ───────────────────────
     protected static function booted(): void
     {
+        // Sinkronkan NIM, telepon, universitas, jurusan ke akun user terkait
+        static::saved(function (Pendaftaran $pendaftaran) {
+            if ($pendaftaran->user_id && $pendaftaran->user) {
+                $pendaftaran->user->update([
+                    'nim'         => $pendaftaran->nim,
+                    'universitas' => $pendaftaran->universitas,
+                    'jurusan'     => $pendaftaran->jurusan,
+                    'telepon'     => $pendaftaran->no_telpon,
+                ]);
+            }
+        });
+
+        // Hapus akun mahasiswa yang terkait jika ada
         static::deleting(function (Pendaftaran $pendaftaran) {
-            // Hapus akun mahasiswa yang terkait jika ada
             if ($pendaftaran->user_id && $pendaftaran->user) {
                 $pendaftaran->user->delete();
             }

@@ -148,10 +148,20 @@ class PendaftaranResource extends Resource
                     ->modalHeading('Terima Pendaftar')
                     ->modalDescription('Akun login akan otomatis dibuat dan password sementara akan tersimpan di catatan.')
                     ->action(function (Pendaftaran $record) {
+                        // Cek apakah akun sudah pernah dibuat
+                        if ($record->user_id && $record->user) {
+                            \Filament\Notifications\Notification::make()
+                                ->title('Akun Sudah Ada')
+                                ->body("Akun mahasiswa untuk {$record->nama_lengkap} sudah pernah dibuat sebelumnya.")
+                                ->warning()
+                                ->send();
+                            return;
+                        }
+
                         // Generate password sementara
                         $tempPassword = \Illuminate\Support\Str::random(8);
 
-                        // Buat akun mahasiswa dengan data dari pendaftaran
+                        // Buat akun mahasiswa dengan data lengkap dari pendaftaran
                         $user = \App\Models\User::create([
                             'name'        => $record->nama_lengkap,
                             'email'       => $record->email,
@@ -172,18 +182,18 @@ class PendaftaranResource extends Resource
 
                         \Filament\Notifications\Notification::make()
                             ->title('Pendaftar Diterima')
-                            ->body("Akun mahasiswa untuk {$record->nama_lengkap} berhasil dibuat. Password: {$tempPassword}")
+                            ->body("Akun mahasiswa untuk {$record->nama_lengkap} berhasil dibuat.\nNIM: {$record->nim}\nTelepon: {$record->no_telpon}\nPassword: {$tempPassword}")
                             ->success()
                             ->send();
                     })
-                    ->visible(fn(Pendaftaran $record) => $record->status === 'menunggu'),
+                    ->visible(fn(Pendaftaran $record) => in_array($record->status, ['menunggu', 'wawancara'])),
                 Tables\Actions\Action::make('tolak')
                     ->label('Tolak')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
                     ->requiresConfirmation()
                     ->action(fn(Pendaftaran $record) => $record->update(['status' => 'ditolak']))
-                    ->visible(fn(Pendaftaran $record) => $record->status === 'menunggu'),
+                    ->visible(fn(Pendaftaran $record) => in_array($record->status, ['menunggu', 'wawancara'])),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
