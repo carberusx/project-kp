@@ -26,8 +26,24 @@ class LoginController extends Controller
         $remember = $request->boolean('remember');
 
         if (Auth::attempt($credentials, $remember)) {
+            $user = Auth::user();
+            
+            // Cek kadaluarsa khusus untuk mahasiswa
+            if ($user->role === 'mahasiswa') {
+                $pendaftaran = $user->pendaftaran;
+                if ($pendaftaran && $pendaftaran->tanggal_selesai) {
+                    $tanggalBerakhir = \Carbon\Carbon::parse($pendaftaran->tanggal_selesai)->endOfDay();
+                    if (now()->gt($tanggalBerakhir)) {
+                        Auth::logout();
+                        $request->session()->invalidate();
+                        $request->session()->regenerateToken();
+                        return back()->withErrors(['email' => 'Masa magang Anda telah berakhir. Akun tidak dapat digunakan lagi.'])->onlyInput('email');
+                    }
+                }
+            }
+
             $request->session()->regenerate();
-            return $this->redirectAfterLogin(Auth::user());
+            return $this->redirectAfterLogin($user);
         }
 
         return back()

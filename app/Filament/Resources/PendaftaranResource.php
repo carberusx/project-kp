@@ -77,9 +77,11 @@ class PendaftaranResource extends Resource
                         ->label('Catatan Admin')
                         ->rows(3),
                     Forms\Components\DatePicker::make('tanggal_mulai')
-                        ->label('Tanggal Mulai Magang'),
+                        ->label('Tanggal Masuk Magang')
+                        ->required(fn(\Filament\Forms\Get $get) => $get('status') === 'diterima'),
                     Forms\Components\DatePicker::make('tanggal_selesai')
-                        ->label('Tanggal Selesai Magang'),
+                        ->label('Tanggal Keluar Magang')
+                        ->required(fn(\Filament\Forms\Get $get) => $get('status') === 'diterima'),
                 ])->columns(2),
         ]);
     }
@@ -108,6 +110,14 @@ class PendaftaranResource extends Resource
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('jurusan')
                     ->label('Jurusan')
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('tanggal_mulai')
+                    ->label('Tgl Masuk')
+                    ->date('d M Y')
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('tanggal_selesai')
+                    ->label('Tgl Keluar')
+                    ->date('d M Y')
                     ->toggleable(),
                 Tables\Columns\BadgeColumn::make('status')
                     ->label('Status')
@@ -146,8 +156,18 @@ class PendaftaranResource extends Resource
                     ->color('success')
                     ->requiresConfirmation()
                     ->modalHeading('Terima Pendaftar')
-                    ->modalDescription('Akun login akan otomatis dibuat dan password sementara akan tersimpan di catatan.')
-                    ->action(function (Pendaftaran $record) {
+                    ->modalDescription('Akun login akan otomatis dibuat. Silakan tentukan tanggal masuk dan keluar mahasiswa.')
+                    ->form([
+                        Forms\Components\DatePicker::make('tanggal_mulai')
+                            ->label('Tanggal Masuk')
+                            ->default(fn (Pendaftaran $record) => $record->tanggal_mulai)
+                            ->required(),
+                        Forms\Components\DatePicker::make('tanggal_selesai')
+                            ->label('Tanggal Keluar')
+                            ->default(fn (Pendaftaran $record) => $record->tanggal_selesai)
+                            ->required(),
+                    ])
+                    ->action(function (array $data, Pendaftaran $record) {
                         // Cek apakah akun sudah pernah dibuat
                         if ($record->user_id && $record->user) {
                             \Filament\Notifications\Notification::make()
@@ -175,10 +195,17 @@ class PendaftaranResource extends Resource
 
                         // Update pendaftaran: status diterima, link user, simpan password di catatan
                         $record->update([
-                            'status'        => 'diterima',
-                            'user_id'       => $user->id,
-                            'catatan_admin' => 'Akun dibuat otomatis. Password sementara: ' . $tempPassword,
+                            'status'          => 'diterima',
+                            'user_id'         => $user->id,
+                            'tanggal_mulai'   => $data['tanggal_mulai'],
+                            'tanggal_selesai' => $data['tanggal_selesai'],
+                            'catatan_admin'   => 'Akun dibuat otomatis. Password sementara: ' . $tempPassword,
                         ]);
+
+                        // Kirim email notifikasi diterima
+                        \Illuminate\Support\Facades\Mail::to($record->email)->send(
+                            new \App\Mail\PendaftaranDiterima($record, $tempPassword)
+                        );
 
                         \Filament\Notifications\Notification::make()
                             ->title('Pendaftar Diterima')
@@ -192,7 +219,12 @@ class PendaftaranResource extends Resource
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
                     ->requiresConfirmation()
-                    ->action(fn(Pendaftaran $record) => $record->update(['status' => 'ditolak']))
+                    ->action(function(Pendaftaran $record) {
+                        $record->update(['status' => 'ditolak']);
+                        \Illuminate\Support\Facades\Mail::to($record->email)->send(
+                            new \App\Mail\PendaftaranDitolak($record)
+                        );
+                    })
                     ->visible(fn(Pendaftaran $record) => in_array($record->status, ['menunggu', 'wawancara'])),
             ])
             ->bulkActions([

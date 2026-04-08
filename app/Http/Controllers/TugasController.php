@@ -36,17 +36,29 @@ class TugasController extends Controller
     {
         $user = Auth::user();
 
+        $pengumpulan = $tugas->pengumpulanByUser($user->id);
+        if ($pengumpulan && $pengumpulan->status === 'dinilai') {
+            return back()->with('error', 'Tugas sudah dinilai, tidak dapat diubah lagi.');
+        }
+
+        if ($tugas->isOverdue() && (!str_contains($pengumpulan?->status, 'revisi'))) {
+            return back()->with('error', 'Tugas sudah kadaluarsa, tidak dapat dikumpulkan.');
+        }
+
         $request->validate([
-            'file_tugas' => 'required|file|mimes:pdf,doc,docx,zip|max:10240',
-            'catatan'    => 'nullable|string|max:500',
+            'file_tugas' => 'required_without:catatan|file|mimes:pdf,doc,docx,zip|max:10240',
+            'catatan'    => 'required_without:file_tugas|nullable|string|max:500',
         ], [
-            'file_tugas.required' => 'File tugas wajib diupload.',
-            'file_tugas.mimes'    => 'Format file harus PDF, DOC, DOCX, atau ZIP.',
-            'file_tugas.max'      => 'Ukuran file maksimal 10 MB.',
+            'file_tugas.required_without' => 'File tugas wajib diupload jika Anda tidak mengisi catatan.',
+            'catatan.required_without'    => 'Catatan wajib diisi jika Anda tidak mengupload file.',
+            'file_tugas.mimes'            => 'Format file harus PDF, DOC, DOCX, atau ZIP.',
+            'file_tugas.max'              => 'Ukuran file maksimal 10 MB.',
         ]);
 
-        $filePath = $request->file('file_tugas')
-            ->store('tugas/pengumpulan', 'public');
+        $filePath = $pengumpulan ? $pengumpulan->file_path : null;
+        if ($request->hasFile('file_tugas')) {
+            $filePath = $request->file('file_tugas')->store('tugas/pengumpulan', 'public');
+        }
 
         PengumpulanTugas::updateOrCreate(
             ['tugas_id' => $tugas->id, 'user_id' => $user->id],

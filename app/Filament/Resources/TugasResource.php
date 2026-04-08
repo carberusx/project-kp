@@ -65,6 +65,7 @@ class TugasResource extends Resource
                 ->relationship('mahasiswas', 'name', fn ($query) => $query->where('role', 'mahasiswa'))
                 ->multiple()
                 ->preload()
+                ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->name} - {$record->jurusan} - ({$record->universitas})")
                 ->searchable()
                 ->helperText('Pilih mahasiswa yang akan mendapat tugas ini')
                 ->columnSpanFull(),

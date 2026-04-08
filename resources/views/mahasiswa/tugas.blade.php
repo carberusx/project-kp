@@ -33,12 +33,14 @@
 
 		{{-- Tombol download file dari admin --}}
 			@if($t->file_tugas)
-			<a href="{{ asset('storage/' . $t->file_tugas) }}" 
-  				target="_blank"
-  				class="inline-flex items-center gap-1.5 mt-1 mb-2 text-xs font-semibold text-primary bg-primary/10 hover:bg-primary/20 px-3 py-1.5 rounded-lg transition-colors">
-    				<span class="material-symbols-outlined text-sm">download</span>
-    				Download File Lampiran
-			</a>
+            <div class="mt-2 mb-3">
+                <a href="{{ asset('storage/' . $t->file_tugas) }}" 
+                    target="_blank"
+                    class="inline-flex items-center gap-1.5 text-xs font-semibold text-primary bg-primary/10 hover:bg-primary/20 px-3 py-1.5 rounded-lg transition-colors w-fit">
+                    <span class="material-symbols-outlined text-sm">download</span>
+                    Download File Lampiran
+                </a>
+            </div>
 			@endif
 
                     <div class="flex items-center gap-1 text-xs text-slate-500">
@@ -64,11 +66,11 @@
                 </div>
             </div>
 
-            <div class="flex-shrink-0">
+            <div class="flex-shrink-0 w-full md:w-auto mt-4 pt-4 md:mt-0 md:pt-0 border-t border-slate-100 md:border-none flex justify-start md:justify-end">
                 @if($t->pengumpulan)
                     @if($t->pengumpulan->status === 'revisi')
                         {{-- Status revisi: tampilkan badge + tombol kirim ulang --}}
-                        <div class="flex flex-col items-end gap-2">
+                        <div class="flex flex-row items-center justify-between w-full md:w-auto md:flex-col md:items-end gap-3 md:gap-2">
                             <span class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-full bg-amber-100 text-amber-700">
                                 <span class="material-symbols-outlined text-sm">rate_review</span>
                                 Perlu Revisi
@@ -81,33 +83,33 @@
                         </div>
                     @elseif($t->pengumpulan->status === 'dinilai')
                         {{-- Sudah dinilai --}}
-                        <div class="flex flex-col items-end gap-1">
-                            <span class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-full bg-green-100 text-green-700">
+                        <div class="flex flex-row items-center justify-between w-full md:w-auto md:flex-col md:items-end gap-3 md:gap-1">
+                            <a href="{{ route('mahasiswa.tugas.upload', $t) }}" class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-full bg-green-100 text-green-700 hover:bg-green-200 transition-colors cursor-pointer" title="Klik untuk mengecek tugas">
                                 <span class="material-symbols-outlined text-sm">grade</span>
                                 Dinilai
-                            </span>
+                            </a>
                             @if($t->pengumpulan->nilai)
-                            <span class="text-lg font-black text-primary">{{ $t->pengumpulan->nilai }}</span>
+                            <span class="text-xl md:text-lg font-black text-primary">{{ $t->pengumpulan->nilai }}</span>
                             @endif
                         </div>
                     @else
                         {{-- Sudah dikumpulkan, menunggu penilaian --}}
-                        <span class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-bold rounded-xl bg-blue-100 text-blue-700">
+                        <a href="{{ route('mahasiswa.tugas.upload', $t) }}" class="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-bold rounded-xl bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors cursor-pointer w-full md:w-auto" title="Klik untuk mengecek tugas">
                             <span class="material-symbols-outlined text-base">check_circle</span>
                             Dikumpulkan
-                        </span>
+                        </a>
                     @endif
                 @elseif(!$t->isOverdue())
                     <a href="{{ route('mahasiswa.tugas.upload', $t) }}"
-                       class="inline-flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-white font-bold py-2.5 px-5 rounded-xl text-sm transition-all shadow-md shadow-primary/20">
+                       class="inline-flex items-center justify-center gap-1.5 bg-primary hover:bg-primary/90 text-white font-bold py-2.5 px-5 rounded-xl text-sm transition-all shadow-md shadow-primary/20 w-full md:w-auto">
                         <span class="material-symbols-outlined text-base">upload_file</span>
                         Kumpulkan
                     </a>
                 @else
-                    <span class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-bold rounded-xl bg-red-100 text-red-700">
+                    <a href="{{ route('mahasiswa.tugas.upload', $t) }}" class="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-bold rounded-xl bg-red-100 text-red-700 hover:bg-red-200 transition-colors cursor-pointer w-full md:w-auto" title="Lihat detail tugas kadaluarsa">
                         <span class="material-symbols-outlined text-base">event_busy</span>
                         Kadaluarsa
-                    </span>
+                    </a>
                 @endif
             </div>
         </div>

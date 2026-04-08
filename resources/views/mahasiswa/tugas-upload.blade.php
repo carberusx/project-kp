@@ -71,6 +71,12 @@
             @endif
         </div>
 
+        @php
+            $isDinilai = $pengumpulan && $pengumpulan->status === 'dinilai';
+            $isKadaluarsa = $tugas->isOverdue() && $pengumpulan?->status !== 'revisi' && !$isDinilai;
+        @endphp
+
+        @if(!($isDinilai || $isKadaluarsa))
         {{-- Form Upload --}}
         <form action="{{ route('mahasiswa.tugas.submit', $tugas) }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-5">
             @csrf
@@ -110,7 +116,7 @@
             {{-- Upload --}}
             <div>
                 <label class="block text-sm font-semibold text-slate-700 mb-2">
-                    File Tugas <span class="text-red-500">*</span>
+                    File Tugas <span class="text-xs font-normal text-slate-400">(opsional jika Anda mengisi catatan)</span>
                 </label>
                 <div class="relative border-2 border-dashed border-slate-300 rounded-xl bg-slate-50 hover:border-primary hover:bg-primary/5 transition-all cursor-pointer" id="dropzone">
                     <div class="flex flex-col items-center justify-center py-10" id="dropzone-content">
@@ -119,31 +125,119 @@
                         <p class="text-xs text-slate-400 mt-1">PDF, DOCX, ZIP — Maks 10MB</p>
                     </div>
                     <input type="file" name="file_tugas" accept=".pdf,.doc,.docx,.zip"
-                           class="absolute inset-0 opacity-0 cursor-pointer" id="file-input" required/>
+                           class="absolute inset-0 opacity-0 cursor-pointer" id="file-input"/>
                 </div>
                 <p class="text-xs text-slate-400 mt-2" id="file-name"></p>
             </div>
 
             {{-- Catatan --}}
             <div>
-                <label class="block text-sm font-semibold text-slate-700 mb-2">Catatan (opsional)</label>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">Catatan <span class="text-xs font-normal text-slate-400">(opsional jika Anda mengupload file)</span></label>
                 <textarea name="catatan" rows="3"
                           placeholder="Tambahkan catatan untuk mentor Anda..."
                           class="w-full rounded-xl border-slate-300 focus:border-primary focus:ring-primary p-4 text-sm resize-none">{{ old('catatan', $pengumpulan?->catatan) }}</textarea>
             </div>
 
-            <div class="flex gap-3 pt-2">
+            <div class="flex flex-col md:flex-row gap-3 pt-2">
                 <button type="submit"
-                    class="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white font-bold py-3 px-7 rounded-xl transition-all shadow-md shadow-primary/20">
+                    class="flex items-center w-full justify-center gap-2 bg-primary hover:bg-primary/90 text-white font-bold py-3 px-7 rounded-xl transition-all shadow-md shadow-primary/20">
                     <span class="material-symbols-outlined">send</span>
                     {{ $pengumpulan ? 'Upload Ulang' : 'Kumpulkan Tugas' }}
                 </button>
                 <a href="{{ route('mahasiswa.tugas.index') }}"
-                   class="flex items-center gap-2 border border-slate-300 text-slate-700 font-bold py-3 px-6 rounded-xl hover:bg-slate-50 transition-all text-sm">
+                   class="flex items-center justify-center gap-2 border border-slate-300 text-slate-700 font-bold py-3 px-6 rounded-xl hover:bg-slate-50 transition-all text-sm w-full md:w-auto">
                     Batal
                 </a>
             </div>
         </form>
+        @elseif($isDinilai)
+        {{-- Detail Pengumpulan (Read-only) --}}
+        <div class="p-6 space-y-5">
+            <div class="p-5 bg-green-50 border-green-200 text-green-800 border rounded-2xl">
+                <div class="flex items-center gap-2 text-lg font-bold mb-2">
+                    <span class="material-symbols-outlined text-2xl">grade</span>
+                    Tugas Dinilai
+                </div>
+                <p class="text-sm opacity-80 mb-1">Dikumpulkan pada: {{ $pengumpulan->dikumpulkan_at->isoFormat('D MMMM Y, HH:mm') }}</p>
+                
+                @if($pengumpulan->nilai)
+                <div class="mt-4 flex items-center gap-3">
+                    <span class="text-sm font-bold opacity-80">Nilai Akhir:</span>
+                    <span class="bg-white text-green-700 px-4 py-1 rounded-lg text-xl font-black shadow-sm border border-green-100">{{ $pengumpulan->nilai }} / 100</span>
+                </div>
+                @endif
+                
+                @if($pengumpulan->feedback)
+                <div class="mt-4 p-4 bg-white/70 rounded-xl border border-white space-y-1">
+                    <p class="text-xs font-bold uppercase tracking-wider opacity-60">Feedback dari Admin:</p>
+                    <p class="text-sm font-medium leading-relaxed">{{ $pengumpulan->feedback }}</p>
+                </div>
+                @endif
+            </div>
+
+            <div class="bg-slate-50 border border-slate-200 rounded-2xl p-5">
+                @if($pengumpulan->file_path)
+                <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">File yang Telah Dikumpulkan</p>
+                <a href="{{ asset('storage/' . $pengumpulan->file_path) }}" target="_blank" class="inline-flex items-center gap-3 text-primary bg-white border border-slate-200 shadow-sm hover:border-primary hover:shadow px-5 py-3 rounded-xl transition-all font-semibold">
+                    <span class="material-symbols-outlined text-2xl">description</span>
+                    Dokumen Tugas Anda
+                </a>
+                @endif
+
+                @if($pengumpulan->catatan)
+                <div class="mt-5 pt-4 border-t border-slate-200">
+                    <p class="text-xs font-bold text-slate-500 mb-2">Pesan yang Disertakan:</p>
+                    <p class="text-sm text-slate-800 font-medium italic opacity-80 leading-relaxed">"{{ $pengumpulan->catatan }}"</p>
+                </div>
+                @endif
+            </div>
+
+            <div class="pt-4">
+                <a href="{{ route('mahasiswa.tugas.index') }}" class="flex items-center justify-center gap-2 border-2 border-slate-200 text-slate-600 font-bold py-3.5 px-6 rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all text-sm w-full">
+                    
+                    Kembali ke Daftar Tugas
+                </a>
+            </div>
+        </div>
+        @elseif($isKadaluarsa)
+        {{-- Detail Kadaluarsa (Read-only) --}}
+        <div class="p-6 space-y-5">
+            <div class="p-5 bg-red-50 border-red-200 text-red-800 border rounded-2xl">
+                <div class="flex items-center gap-2 text-lg font-bold mb-2">
+                    <span class="material-symbols-outlined text-2xl">event_busy</span>
+                    Tugas Kadaluarsa
+                </div>
+                <p class="text-sm opacity-80 mb-1">Batas waktu pengumpulan telah lewat pada {{ $tugas->deadline->isoFormat('D MMMM Y, HH:mm') }}.</p>
+                <p class="text-sm font-medium mt-1">Anda tidak dapat mengirim atau mengubah tugas.</p>
+            </div>
+
+            @if($pengumpulan)
+            <div class="bg-slate-50 border border-slate-200 rounded-2xl p-5">
+                @if($pengumpulan->file_path)
+                <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">File yang Telah Dikumpulkan</p>
+                <a href="{{ asset('storage/' . $pengumpulan->file_path) }}" target="_blank" class="inline-flex items-center gap-3 text-primary bg-white border border-slate-200 shadow-sm hover:border-primary hover:shadow px-5 py-3 rounded-xl transition-all font-semibold">
+                    <span class="material-symbols-outlined text-2xl">description</span>
+                    Dokumen Tugas Anda
+                </a>
+                @endif
+
+                @if($pengumpulan->catatan)
+                <div class="mt-5 pt-4 border-t border-slate-200">
+                    <p class="text-xs font-bold text-slate-500 mb-2">Pesan yang Disertakan:</p>
+                    <p class="text-sm text-slate-800 font-medium italic opacity-80 leading-relaxed">"{{ $pengumpulan->catatan }}"</p>
+                </div>
+                @endif
+            </div>
+            @endif
+
+            <div class="pt-4">
+                <a href="{{ route('mahasiswa.tugas.index') }}" class="flex items-center justify-center gap-2 border-2 border-slate-200 text-slate-600 font-bold py-3.5 px-6 rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all text-sm w-full">
+                    
+                    Kembali ke Daftar Tugas
+                </a>
+            </div>
+        </div>
+        @endif
     </div>
 </div>
 @endsection

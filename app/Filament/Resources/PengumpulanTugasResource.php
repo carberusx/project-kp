@@ -49,6 +49,16 @@ class PengumpulanTugasResource extends Resource
                         ->label('Catatan Mahasiswa')
                         ->disabled()
                         ->rows(3),
+                    Forms\Components\Placeholder::make('file_download')
+                        ->label('File Tugas')
+                        ->content(fn ($record) => $record && $record->file_path 
+                            ? new \Illuminate\Support\HtmlString('
+                                <a href="' . asset('storage/' . $record->file_path) . '" target="_blank" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; background-color: #10b981; color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 600; text-decoration: none; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);">
+                                    <svg style="width: 1.25rem; height: 1.25rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                    Download File Mahasiswa
+                                </a>')
+                            : 'Tidak ada file.')
+                        ->columnSpanFull(),
                 ])->columns(2),
 
             Forms\Components\Section::make('Penilaian Admin')

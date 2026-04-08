@@ -47,6 +47,17 @@ class UserResource extends Resource
                         ->dehydrated(fn($state) => !empty($state))
                         ->required(fn(string $operation) => $operation === 'create')
                         ->helperText('Kosongkan jika tidak ingin mengubah password'),
+                    Forms\Components\Placeholder::make('password_sementara')
+                        ->label('Password Sementara')
+                        ->content(function (?User $record) {
+                            if (!$record) return '—';
+                            $catatan = $record->pendaftaran?->catatan_admin ?? '';
+                            if (str_contains($catatan, 'Password sementara: ')) {
+                                return explode('Password sementara: ', $catatan)[1] ?? '—';
+                            }
+                            return '—';
+                        })
+                        ->visible(fn (?User $record) => $record !== null),
                 ])->columns(2),
 
             Forms\Components\Section::make('Data Mahasiswa')
@@ -95,6 +106,20 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('telepon')
                     ->label('No. Telepon')
                     ->default('—')
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('password_sementara')
+                    ->label('Password Sementara')
+                    ->getStateUsing(function (User $record) {
+                        $catatan = $record->pendaftaran?->catatan_admin ?? '';
+                        if (str_contains($catatan, 'Password sementara: ')) {
+                            return explode('Password sementara: ', $catatan)[1] ?? '—';
+                        }
+                        return '—';
+                    })
+                    ->copyable()
+                    ->copyMessage('Password tersalin')
+                    ->badge()
+                    ->color('info')
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Dibuat')

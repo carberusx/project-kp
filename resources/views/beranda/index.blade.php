@@ -260,23 +260,35 @@
                     </div>
                     <div class="flex flex-col gap-1.5">
                         <label class="text-sm font-semibold text-slate-700">Jurusan / Program Studi <span class="text-red-500">*</span></label>
-                        <select name="jurusan" class="w-full rounded-xl border-slate-300 focus:border-primary focus:ring-primary h-11 px-4 text-sm @error('jurusan') border-red-400 @enderror">
-                            <option value="">Pilih Jurusan</option>
-                            <option value="Sistem Informasi" {{ old('jurusan') === 'Sistem informasi' ? 'selected' : '' }}>Sistem informasi</option>
-                            <option value="Administrasi Negara" {{ old('jurusan') === 'Administrasi Negara' ? 'selected' : '' }}>Administrasi Negara</option>
-                            <option value="Ekonomi" {{ old('jurusan') === 'Ekonomi' ? 'selected' : '' }}>Ekonomi</option>
-                            <option value="Hukum" {{ old('jurusan') === 'Hukum' ? 'selected' : '' }}>Hukum</option>
-                            <option value="Teknik Informatika" {{ old('jurusan') === 'Teknik Informatika' ? 'selected' : '' }}>Teknik Informatika</option>
-                            <option value="Komunikasi" {{ old('jurusan') === 'Komunikasi' ? 'selected' : '' }}>Komunikasi</option>
-                            <option value="Lainnya" {{ old('jurusan') === 'Lainnya' ? 'selected' : '' }}>Lainnya</option>
-                        </select>
+                        <input type="text" name="jurusan" list="jurusan-options" value="{{ old('jurusan') }}" placeholder="Contoh: Teknik Informatika"
+                               class="w-full rounded-xl border-slate-300 focus:border-primary focus:ring-primary h-11 px-4 text-sm @error('jurusan') border-red-400 @enderror" autocomplete="off"/>
+                        <datalist id="jurusan-options">
+                            <option value="Sistem Informasi">
+                            <option value="Administrasi Negara">
+                            <option value="Ekonomi">
+                            <option value="Hukum">
+                            <option value="Teknik Informatika">
+                            <option value="Komunikasi">
+                        </datalist>
                         @error('jurusan')<p class="text-xs text-red-600">{{ $message }}</p>@enderror
+                    </div>
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-sm font-semibold text-slate-700">Tanggal Mulai Magang <span class="text-red-500">*</span></label>
+                        <input type="date" name="tanggal_mulai" value="{{ old('tanggal_mulai') }}"
+                               class="w-full rounded-xl border-slate-300 focus:border-primary focus:ring-primary h-11 px-4 text-sm @error('tanggal_mulai') border-red-400 @enderror"/>
+                        @error('tanggal_mulai')<p class="text-xs text-red-600">{{ $message }}</p>@enderror
+                    </div>
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-sm font-semibold text-slate-700">Tanggal Selesai Magang <span class="text-red-500">*</span></label>
+                        <input type="date" name="tanggal_selesai" value="{{ old('tanggal_selesai') }}"
+                               class="w-full rounded-xl border-slate-300 focus:border-primary focus:ring-primary h-11 px-4 text-sm @error('tanggal_selesai') border-red-400 @enderror"/>
+                        @error('tanggal_selesai')<p class="text-xs text-red-600">{{ $message }}</p>@enderror
                     </div>
                 </div>
 
                 {{-- Upload CV --}}
                 <div class="flex flex-col gap-1.5">
-                    <label class="text-sm font-semibold text-slate-700">Upload CV & Transkrip (opsional)</label>
+                    <label class="text-sm font-semibold text-slate-700">Upload CV (opsional)</label>
                     <label class="relative border-2 border-dashed border-slate-300 rounded-xl hover:border-primary transition-colors cursor-pointer bg-slate-50 hover:bg-primary/5 block">
                         <div id="upload-placeholder" class="flex flex-col items-center justify-center py-8 pointer-events-none">
                             <span class="material-symbols-outlined text-3xl text-slate-400 mb-2">upload_file</span>
