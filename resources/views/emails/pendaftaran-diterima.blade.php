@@ -87,6 +87,9 @@
             </div>
         </div>
 
+        <div class="warning" style="background: #fef2f2; border: 1px solid #fecaca; color: #991b1b;">
+            <strong>⚠️ Peringatan Keamanan:</strong> Harap segera ubah password sementara Anda melalui menu <strong>Profil</strong> setelah pertama kali berhasil login demi menjaga keamanan akun Anda.
+        </div>
         
         <a href="{{ config('app.url') }}/login" class="btn">Login ke Portal Magang</a>
 

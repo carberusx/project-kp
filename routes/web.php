@@ -40,6 +40,7 @@ Route::middleware(['auth', 'role:mahasiswa'])->prefix('mahasiswa')->name('mahasi
 
     // Profil
     Route::get('/profil', [DashboardController::class, 'profil'])->name('profil');
+    Route::put('/profil/password', [DashboardController::class, 'updatePassword'])->name('profil.password.update');
 });
 
 // Redirect /dashboard ke role yang sesuai

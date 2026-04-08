@@ -22,7 +22,7 @@ class Pendaftaran extends Model
         'motivasi',
         'file_cv',
         'file_transkrip',
-        'status', // 'menunggu' | 'diterima' | 'ditolak' | 'wawancara'
+        'status', // 'menunggu' | 'diterima' | 'ditolak'
         'catatan_admin',
         'tanggal_mulai',
         'tanggal_selesai',
@@ -68,7 +68,6 @@ class Pendaftaran extends Model
         return match ($this->status) {
             'diterima'    => 'success',
             'ditolak'     => 'danger',
-            'wawancara'   => 'warning',
             default       => 'gray',
         };
     }
@@ -78,7 +77,6 @@ class Pendaftaran extends Model
         return match ($this->status) {
             'diterima'    => 'Diterima',
             'ditolak'     => 'Ditolak',
-            'wawancara'   => 'Wawancara',
             default       => 'Menunggu',
         };
     }

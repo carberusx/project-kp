@@ -60,6 +60,13 @@ class PendaftaranResource extends Resource
                         ->label('Motivasi')
                         ->rows(4)
                         ->columnSpanFull(),
+                    Forms\Components\FileUpload::make('file_cv')
+                        ->label('Dokumen / CV')
+                        ->disk('public')
+                        ->directory('pendaftaran/dokumen')
+                        ->downloadable()
+                        ->acceptedFileTypes(['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/zip'])
+                        ->columnSpanFull(),
                 ])->columns(2),
 
             Forms\Components\Section::make('Keputusan Admin')
@@ -68,7 +75,6 @@ class PendaftaranResource extends Resource
                         ->label('Status')
                         ->options([
                             'menunggu'   => 'Menunggu',
-                            'wawancara'  => 'Wawancara',
                             'diterima'   => 'Diterima',
                             'ditolak'    => 'Ditolak',
                         ])
@@ -115,6 +121,12 @@ class PendaftaranResource extends Resource
                     ->label('Tgl Masuk')
                     ->date('d M Y')
                     ->toggleable(),
+                Tables\Columns\IconColumn::make('file_cv')
+                    ->label('File CV')
+                    ->boolean()
+                    ->trueIcon('heroicon-o-paper-clip')
+                    ->falseIcon('heroicon-o-x-mark')
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('tanggal_selesai')
                     ->label('Tgl Keluar')
                     ->date('d M Y')
@@ -123,13 +135,11 @@ class PendaftaranResource extends Resource
                     ->label('Status')
                     ->colors([
                         'warning' => 'menunggu',
-                        'info'    => 'wawancara',
                         'success' => 'diterima',
                         'danger'  => 'ditolak',
                     ])
                     ->formatStateUsing(fn($state) => match($state) {
                         'menunggu'  => 'Menunggu',
-                        'wawancara' => 'Wawancara',
                         'diterima'  => 'Diterima',
                         'ditolak'   => 'Ditolak',
                         default     => $state,
@@ -143,7 +153,6 @@ class PendaftaranResource extends Resource
                 Tables\Filters\SelectFilter::make('status')
                     ->options([
                         'menunggu'   => 'Menunggu',
-                        'wawancara'  => 'Wawancara',
                         'diterima'   => 'Diterima',
                         'ditolak'    => 'Ditolak',
                     ]),
@@ -213,7 +222,7 @@ class PendaftaranResource extends Resource
                             ->success()
                             ->send();
                     })
-                    ->visible(fn(Pendaftaran $record) => in_array($record->status, ['menunggu', 'wawancara'])),
+                    ->visible(fn(Pendaftaran $record) => $record->status === 'menunggu'),
                 Tables\Actions\Action::make('tolak')
                     ->label('Tolak')
                     ->icon('heroicon-o-x-circle')
@@ -225,7 +234,7 @@ class PendaftaranResource extends Resource
                             new \App\Mail\PendaftaranDitolak($record)
                         );
                     })
-                    ->visible(fn(Pendaftaran $record) => in_array($record->status, ['menunggu', 'wawancara'])),
+                    ->visible(fn(Pendaftaran $record) => $record->status === 'menunggu'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

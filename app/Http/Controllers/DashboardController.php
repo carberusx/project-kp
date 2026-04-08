@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Absensi;
 use App\Models\Tugas;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class DashboardController extends Controller
 {
@@ -56,5 +58,28 @@ class DashboardController extends Controller
         $user        = Auth::user();
         $pendaftaran = $user->pendaftaran;
         return view('mahasiswa.profil', compact('user', 'pendaftaran'));
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required',
+            'password' => 'required|min:8|confirmed',
+        ], [
+            'current_password.required' => 'Password saat ini wajib diisi.',
+            'password.required' => 'Password baru wajib diisi.',
+            'password.min' => 'Password baru minimal 8 karakter.',
+            'password.confirmed' => 'Konfirmasi password baru tidak cocok.',
+        ]);
+
+        if (!Hash::check($request->current_password, auth()->user()->password)) {
+            return back()->with('error', 'Password saat ini tidak sesuai.');
+        }
+
+        auth()->user()->update([
+            'password' => Hash::make($request->password)
+        ]);
+
+        return back()->with('success', 'Password Anda berhasil diperbarui!');
     }
 }

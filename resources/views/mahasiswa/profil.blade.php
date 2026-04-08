@@ -66,5 +66,64 @@
     </div>
     @endif
 
+    {{-- Ubah Password --}}
+    <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm mt-6">
+        <h3 class="font-bold text-slate-900 mb-4 flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary">lock_reset</span>
+            Ubah Password
+        </h3>
+
+        @if(session('success'))
+            <div class="mb-4 p-4 bg-green-50 border border-green-200 text-green-700 rounded-xl text-sm font-medium flex items-center gap-2">
+                <span class="material-symbols-outlined">check_circle</span>
+                {{ session('success') }}
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div class="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm font-medium flex items-center gap-2">
+                <span class="material-symbols-outlined">error</span>
+                {{ session('error') }}
+            </div>
+        @endif
+
+        <form action="{{ route('mahasiswa.profil.password.update') }}" method="POST" class="space-y-4">
+            @csrf
+            @method('PUT')
+
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Password Saat Ini</label>
+                <input type="password" name="current_password" required
+                       class="w-full rounded-xl border-slate-300 focus:border-primary focus:ring-primary text-sm p-3 @error('current_password') border-red-500 @enderror">
+                @error('current_password')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Password Baru</label>
+                    <input type="password" name="password" required
+                           class="w-full rounded-xl border-slate-300 focus:border-primary focus:ring-primary text-sm p-3 @error('password') border-red-500 @enderror">
+                    @error('password')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Konfirmasi Password Baru</label>
+                    <input type="password" name="password_confirmation" required
+                           class="w-full rounded-xl border-slate-300 focus:border-primary focus:ring-primary text-sm p-3">
+                </div>
+            </div>
+
+            <div class="pt-2">
+                <button type="submit"
+                        class="bg-primary hover:bg-primary/90 text-white font-bold py-2.5 px-6 rounded-xl transition-all text-sm w-full md:w-auto shadow-sm shadow-primary/20">
+                    Simpan Password
+                </button>
+            </div>
+        </form>
+    </div>
+
 </div>
 @endsection
