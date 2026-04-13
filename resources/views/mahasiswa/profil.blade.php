@@ -7,6 +7,23 @@
 @section('content')
 <div class="max-w-2xl space-y-6">
 
+    {{-- Notifikasi Validasi --}}
+
+    @if($errors->any())
+        <div class="p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm font-medium flex items-start gap-2">
+            <span class="material-symbols-outlined mt-0.5">error</span>
+            <div>
+                <p class="font-bold mb-1">Terdapat kesalahan:</p>
+                <ul class="list-disc list-inside">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        </div>
+    @endif
+
+
     {{-- Kartu Profil --}}
     <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
         <div class="flex items-center gap-5 mb-6">
@@ -73,19 +90,6 @@
             Ubah Password
         </h3>
 
-        @if(session('success'))
-            <div class="mb-4 p-4 bg-green-50 border border-green-200 text-green-700 rounded-xl text-sm font-medium flex items-center gap-2">
-                <span class="material-symbols-outlined">check_circle</span>
-                {{ session('success') }}
-            </div>
-        @endif
-
-        @if(session('error'))
-            <div class="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm font-medium flex items-center gap-2">
-                <span class="material-symbols-outlined">error</span>
-                {{ session('error') }}
-            </div>
-        @endif
 
         <form action="{{ route('mahasiswa.profil.password.update') }}" method="POST" class="space-y-4">
             @csrf
@@ -127,3 +131,4 @@
 
 </div>
 @endsection
+

@@ -32,7 +32,7 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->colors(['primary' => Color::Blue])
-            ->brandName('Magang DPMPTSP — Admin')
+            ->brandName('Magang DPMPTSP - Admin')
             ->navigationGroups([
                 NavigationGroup::make('Manajemen'),
                 NavigationGroup::make('Monitoring'),

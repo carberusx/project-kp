@@ -228,11 +228,30 @@ class PendaftaranResource extends Resource
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
                     ->requiresConfirmation()
-                    ->action(function(Pendaftaran $record) {
-                        $record->update(['status' => 'ditolak']);
+                    ->modalHeading('Tolak Pendaftar')
+                    ->modalDescription('Apakah Anda yakin ingin menolak pendaftar ini? Anda dapat memberikan alasan penolakan secara opsional yang akan dikirim melalui email.')
+                    ->form([
+                        Forms\Components\Textarea::make('catatan_admin')
+                            ->label('Alasan Penolakan (Opsional)')
+                            ->placeholder('Contoh: Kuota penuh, Jurusan tidak linier, dll.')
+                            ->rows(3),
+                    ])
+                    ->action(function(array $data, Pendaftaran $record) {
+                        $updateData = ['status' => 'ditolak'];
+                        if (!empty($data['catatan_admin'])) {
+                            $updateData['catatan_admin'] = $data['catatan_admin'];
+                        }
+                        
+                        $record->update($updateData);
+                        
                         \Illuminate\Support\Facades\Mail::to($record->email)->send(
                             new \App\Mail\PendaftaranDitolak($record)
                         );
+
+                        \Filament\Notifications\Notification::make()
+                            ->title('Pendaftar Ditolak')
+                            ->success()
+                            ->send();
                     })
                     ->visible(fn(Pendaftaran $record) => $record->status === 'menunggu'),
             ])

@@ -5,6 +5,10 @@
 @section('page-subtitle', 'Selamat datang, ' . auth()->user()->name . '!')
 
 @section('content')
+@php
+    $isWeekend = today()->isWeekend();
+    $liburNasional = \App\Models\HariLibur::whereDate('tanggal', today())->first();
+@endphp
 <div class="space-y-5">
 
     {{-- ── STAT CARDS ─────────────────────────────────────────────────── --}}
@@ -16,6 +20,8 @@
                 </div>
                 @if($absensiHariIni)
                     <span class="text-xs font-bold text-green-600 bg-green-100 px-2 py-0.5 rounded-full">Hadir</span>
+                @elseif($isWeekend || $liburNasional)
+                    <span class="text-xs font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full">Libur</span>
                 @else
                     <span class="text-xs font-bold text-amber-600 bg-amber-100 px-2 py-0.5 rounded-full">Belum</span>
                 @endif
@@ -24,6 +30,8 @@
             <p class="text-xl md:text-2xl font-black mt-1">
                 @if($absensiHariIni && $absensiHariIni->jam_masuk)
                     {{ \Carbon\Carbon::parse($absensiHariIni->jam_masuk)->format('H:i') }}
+                @elseif($isWeekend || $liburNasional)
+                    -
                 @else
                     Belum
                 @endif
@@ -82,7 +90,14 @@
                     </div>
                 </div>
 
-                @if(!$absensiHariIni)
+                @if($isWeekend || $liburNasional)
+                    <div class="bg-amber-50 border border-amber-200 text-amber-800 rounded-xl p-4 flex items-start gap-3">
+                        <div>
+                            <h4 class="font-bold text-sm">Hari Libur</h4>
+                            <p class="text-sm">Hari ini adalah hari libur ({{ $isWeekend ? 'Akhir Pekan' : $liburNasional->keterangan }}). Anda tidak perlu Absen.</p>
+                        </div>
+                    </div>
+                @elseif(!$absensiHariIni)
                     <a href="{{ route('mahasiswa.absensi.index') }}?action=masuk" class="w-full sm:w-auto flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-md shadow-primary/20">
                         <span class="material-symbols-outlined">fingerprint</span>
                         Tandai Hadir
@@ -205,7 +220,7 @@
                     @endforelse
                 </div>
                 <a href="{{ route('mahasiswa.absensi.index') }}" class="mt-3 block text-center text-xs text-primary font-semibold hover:underline">
-                    Lihat semua →
+                    Lihat semua 
                 </a>
             </div>
 

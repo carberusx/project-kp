@@ -5,13 +5,17 @@
 @section('page-subtitle', 'Rekap kehadiran Anda')
 
 @section('content')
+@php
+    $isWeekend = today()->isWeekend();
+    $liburNasional = \App\Models\HariLibur::whereDate('tanggal', today())->first();
+@endphp
 <div class="space-y-6">
 
     {{-- ── Aksi Absensi ─────────────────────────────────────────────────── --}}
     <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
         <h3 class="font-bold text-lg text-slate-900 flex items-center gap-2 mb-5">
             <span class="material-symbols-outlined text-primary">fingerprint</span>
-            Absensi Hari Ini — {{ now()->isoFormat('dddd, D MMMM Y') }}
+            Absensi Hari Ini - {{ now()->isoFormat('dddd, D MMMM Y') }}
         </h3>
 
         {{-- Info Waktu --}}
@@ -22,62 +26,77 @@
             </div>
             <div class="bg-slate-50 rounded-xl p-4 border border-slate-100">
                 <p class="text-xs text-slate-500 mb-1">Status</p>
-                <p class="text-sm font-bold {{ $absensiHariIni ? 'text-green-600' : 'text-amber-600' }}">
-                    {{ $absensiHariIni ? ucfirst($absensiHariIni->status) : 'Belum Absen' }}
+                <p class="text-sm font-bold {{ $absensiHariIni ? 'text-green-600' : ($isWeekend || $liburNasional ? 'text-slate-600' : 'text-amber-600') }}">
+                    @if($absensiHariIni)
+                        {{ ucfirst($absensiHariIni->status) }}
+                    @elseif($isWeekend || $liburNasional)
+                        Hari Libur
+                    @else
+                        Belum Absen
+                    @endif
                 </p>
             </div>
             <div class="bg-green-50 rounded-xl p-4 border border-green-100">
                 <p class="text-xs text-slate-500 mb-1">Jam Masuk</p>
                 <p class="text-xl font-bold text-green-700">
-                    {{ $absensiHariIni?->jam_masuk ? \Carbon\Carbon::parse($absensiHariIni->jam_masuk)->format('H:i') : '—' }}
+                    {{ $absensiHariIni?->jam_masuk ? \Carbon\Carbon::parse($absensiHariIni->jam_masuk)->format('H:i') : '-' }}
                 </p>
             </div>
             <div class="bg-blue-50 rounded-xl p-4 border border-blue-100">
                 <p class="text-xs text-slate-500 mb-1">Jam Pulang</p>
                 <p class="text-xl font-bold text-blue-700">
-                    {{ $absensiHariIni?->jam_keluar ? \Carbon\Carbon::parse($absensiHariIni->jam_keluar)->format('H:i') : '—' }}
+                    {{ $absensiHariIni?->jam_keluar ? \Carbon\Carbon::parse($absensiHariIni->jam_keluar)->format('H:i') : '-' }}
                 </p>
             </div>
         </div>
 
-        {{-- Tombol Aksi --}}
-        <div class="flex flex-wrap gap-3">
-            @if(!$absensiHariIni)
-                <button onclick="bukaModalAbsensi('masuk')"
-                    class="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-md shadow-primary/20">
-                    <span class="material-symbols-outlined">login</span>
-                    Tandai Hadir
-                </button>
-                <button onclick="document.getElementById('modal-izin-sakit').classList.remove('hidden')"
-                    class="flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-xl transition-all">
-                    <span class="material-symbols-outlined">event_busy</span>
-                    Izin / Sakit
-                </button>
-
-            @elseif($absensiHariIni->status === 'hadir' && !$absensiHariIni->jam_keluar)
-                <div class="flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 px-5 py-3 rounded-xl font-semibold text-sm">
-                    <span class="material-symbols-outlined">check_circle</span>
-                    Masuk pukul {{ \Carbon\Carbon::parse($absensiHariIni->jam_masuk)->format('H:i') }}
+        @if($isWeekend || $liburNasional)
+            <div class="bg-amber-50 border border-amber-200 text-amber-800 rounded-xl p-4 flex items-start gap-3">
+                <div>
+                    <h4 class="font-bold text-sm">Hari Libur</h4>
+                    <p class="text-sm">Hari ini adalah hari libur ({{ $isWeekend ? 'Akhir Pekan' : $liburNasional->keterangan }}). Anda tidak perlu melakukan absensi.</p>
                 </div>
-                <button onclick="bukaModalAbsensi('keluar')"
-                    class="flex items-center gap-2 border border-slate-300 text-slate-700 font-bold py-3 px-6 rounded-xl hover:bg-slate-50 transition-all">
-                    <span class="material-symbols-outlined">logout</span>
-                    Tandai Pulang
-                </button>
+            </div>
+        @else
+            {{-- Tombol Aksi --}}
+            <div class="flex flex-wrap gap-3">
+                @if(!$absensiHariIni)
+                    <button onclick="bukaModalAbsensi('masuk')"
+                        class="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-md shadow-primary/20">
+                        <span class="material-symbols-outlined">login</span>
+                        Tandai Hadir
+                    </button>
+                    <button onclick="document.getElementById('modal-izin-sakit').classList.remove('hidden')"
+                        class="flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-xl transition-all">
+                        <span class="material-symbols-outlined">event_busy</span>
+                        Izin / Sakit
+                    </button>
 
-            @else
-                <div class="flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 px-5 py-3 rounded-xl font-semibold text-sm">
-                    <span class="material-symbols-outlined">task_alt</span>
-                    @if($absensiHariIni->status === 'hadir')
-                        Absensi lengkap — Durasi: {{ $absensiHariIni->durasi ?? '—' }}
-                    @elseif($absensiHariIni->status === 'izin')
-                        Izin hari ini telah tercatat
-                    @elseif($absensiHariIni->status === 'sakit')
-                        Sakit hari ini telah tercatat
-                    @endif
-                </div>
-            @endif
-        </div>
+                @elseif($absensiHariIni->status === 'hadir' && !$absensiHariIni->jam_keluar)
+                    <div class="flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 px-5 py-3 rounded-xl font-semibold text-sm">
+                        <span class="material-symbols-outlined">check_circle</span>
+                        Masuk pukul {{ \Carbon\Carbon::parse($absensiHariIni->jam_masuk)->format('H:i') }}
+                    </div>
+                    <button onclick="bukaModalAbsensi('keluar')"
+                        class="flex items-center gap-2 border border-slate-300 text-slate-700 font-bold py-3 px-6 rounded-xl hover:bg-slate-50 transition-all">
+                        <span class="material-symbols-outlined">logout</span>
+                        Tandai Pulang
+                    </button>
+
+                @else
+                    <div class="flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 px-5 py-3 rounded-xl font-semibold text-sm">
+                        <span class="material-symbols-outlined">task_alt</span>
+                        @if($absensiHariIni->status === 'hadir')
+                            Absensi lengkap — Durasi: {{ $absensiHariIni->durasi ?? '-' }}
+                        @elseif($absensiHariIni->status === 'izin')
+                            Izin hari ini telah tercatat
+                        @elseif($absensiHariIni->status === 'sakit')
+                            Sakit hari ini telah tercatat
+                        @endif
+                    </div>
+                @endif
+            </div>
+        @endif
 
         {{-- Info lokasi absensi masuk --}}
         @if($absensiHariIni?->alamat_masuk)
@@ -144,8 +163,8 @@
                             <p class="font-semibold">{{ $abs->tanggal->format('d M Y') }}</p>
                             <p class="text-xs text-slate-400">{{ $abs->tanggal->isoFormat('dddd') }}</p>
                         </td>
-                        <td class="px-4 py-4">{{ $abs->jam_masuk ? \Carbon\Carbon::parse($abs->jam_masuk)->format('H:i') : '—' }}</td>
-                        <td class="px-4 py-4">{{ $abs->jam_keluar ? \Carbon\Carbon::parse($abs->jam_keluar)->format('H:i') : '—' }}</td>
+                        <td class="px-4 py-4">{{ $abs->jam_masuk ? \Carbon\Carbon::parse($abs->jam_masuk)->format('H:i') : '-' }}</td>
+                        <td class="px-4 py-4">{{ $abs->jam_keluar ? \Carbon\Carbon::parse($abs->jam_keluar)->format('H:i') : '-' }}</td>
                         <td class="px-4 py-4">
                             @if($abs->foto_masuk)
                             <a href="{{ asset('storage/' . $abs->foto_masuk) }}" target="_blank">
@@ -154,7 +173,7 @@
                                      alt="Foto masuk">
                             </a>
                             @else
-                            <span class="text-slate-300">—</span>
+                            <span class="text-slate-300">-</span>
                             @endif
                         </td>
                         <td class="px-4 py-4">
@@ -166,7 +185,7 @@
                                 Lihat Map
                             </a>
                             @else
-                            <span class="text-slate-300 text-xs">—</span>
+                            <span class="text-slate-300 text-xs">-</span>
                             @endif
                         </td>
                         <td class="px-4 py-4">
