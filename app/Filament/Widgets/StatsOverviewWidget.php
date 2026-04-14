@@ -11,6 +11,11 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class StatsOverviewWidget extends BaseWidget
 {
+    protected function getColumns(): int
+    {
+        return 1;
+    }
+
     protected function getStats(): array
     {
         $totalPendaftar   = Pendaftaran::count();

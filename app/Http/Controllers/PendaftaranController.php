@@ -3,22 +3,30 @@
 namespace App\Http\Controllers;
 
 use App\Models\Pendaftaran;
+use App\Models\Pengaturan;
 use Illuminate\Http\Request;
 
 class PendaftaranController extends Controller
 {
-    // Batas maksimal pendaftar
-    const BATAS_PENDAFTAR = 10;
-
     public function store(Request $request)
     {
         try {
+            // Cek apakah pendaftaran ditutup manual
+            $statusPendaftaran = Pengaturan::getNilai('status_pendaftaran', 'buka');
+            if ($statusPendaftaran === 'tutup') {
+                return redirect()->route('beranda')
+                    ->with('error', 'Maaf, form pendaftaran saat ini sedang ditutup oleh Admin.');
+            }
+
+            // Batas maksimal pendaftar
+            $batasPendaftar = (int) Pengaturan::getNilai('batas_max_pendaftar', 10);
+
             // Cek apakah sudah mencapai batas (hanya hitung yang BUKAN ditolak, sama seperti di BerandaController)
             $jumlahPendaftar = Pendaftaran::where('status', '!=', 'ditolak')->count();
 
-            if ($jumlahPendaftar >= self::BATAS_PENDAFTAR) {
+            if ($jumlahPendaftar >= $batasPendaftar) {
                 return redirect()->route('beranda')
-                    ->with('error', 'Maaf, pendaftaran telah ditutup karena kuota ' . self::BATAS_PENDAFTAR . ' pendaftar sudah terpenuhi.');
+                    ->with('error', 'Maaf, pendaftaran telah ditutup karena kuota ' . $batasPendaftar . ' pendaftar sudah terpenuhi.');
             }
 
             $validated = $request->validate([

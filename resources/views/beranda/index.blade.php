@@ -109,7 +109,7 @@
                         <div class="grid grid-cols-2 gap-4 mb-6">
                         <div class="bg-white/10 rounded-xl p-4">
                             <p class="text-3xl font-black">{{ $mahasiswaAktif }}</p>
-                            <p class="text-blue-200 text-sm">Magang Aktif</p>
+                            <p class="text-blue-200 text-sm">Magang Diterima</p>
                         </div>
                         <div class="bg-white/10 rounded-xl p-4">
                             <p class="text-3xl font-black">{{ $reviewPending }}</p>
@@ -118,7 +118,7 @@
                     </div>
                     <div class="space-y-2">
                         <div class="flex items-center justify-between text-sm">
-                            <span class="text-blue-100">Pendaftar Diterima</span>
+                            <span class="text-blue-100">Total Pendaftar</span>
                             <span class="font-bold">{{ $persenDiterima }}%</span>
                         </div>
                         <div class="h-2 bg-white/20 rounded-full overflow-hidden">
