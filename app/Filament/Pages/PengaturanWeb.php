@@ -3,12 +3,12 @@
 namespace App\Filament\Pages;
 
 use App\Models\Pengaturan;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema; 
+use Filament\Schemas\Components\Section; // <-- KOREKSI: Pindah dari Forms ke Schemas
 use Filament\Pages\Page;
 use Filament\Notifications\Notification;
 
@@ -16,15 +16,34 @@ class PengaturanWeb extends Page implements HasForms
 {
     use InteractsWithForms;
 
-    protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
-    protected static ?string $navigationGroup = 'Manajemen';
-    protected static ?string $title = 'Pengaturan Sistem';
-    protected static ?string $navigationLabel = 'Pengaturan Web';
-    protected static ?string $slug = 'pengaturan-web';
-
-    protected static string $view = 'filament.pages.pengaturan-web';
+    protected string $view = 'filament.pages.pengaturan-web';
 
     public ?array $data = [];
+
+    public static function getNavigationIcon(): string | null
+    {
+        return 'heroicon-o-cog-6-tooth';
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return 'Manajemen';
+    }
+
+    public function getTitle(): string
+    {
+        return 'Pengaturan Sistem';
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return 'Pengaturan Web';
+    }
+
+    public static function getSlug(?\Filament\Panel $panel = null): string
+    {
+        return 'pengaturan-web';
+    }
 
     public function mount(): void
     {
@@ -34,9 +53,9 @@ class PengaturanWeb extends Page implements HasForms
         ]);
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
+        return $schema
             ->schema([
                 Section::make('Konfigurasi Pendaftaran Magang')
                     ->description('Atur batas kuota pendaftar dan buka/tutup form pendaftaran.')

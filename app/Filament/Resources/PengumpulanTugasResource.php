@@ -5,19 +5,43 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\PengumpulanTugasResource\Pages;
 use App\Models\PengumpulanTugas;
 use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Notifications\Notification;
+use Filament\Actions\Action; // <-- Gunakan ini untuk semua tombol custom
+use Filament\Actions\EditAction; // <-- Gunakan ini untuk Edit
 
 class PengumpulanTugasResource extends Resource
 {
     protected static ?string $model = PengumpulanTugas::class;
-    protected static ?string $navigationIcon  = 'heroicon-o-clipboard-document-check';
-    protected static ?string $navigationLabel = 'Penilaian Tugas';
-    protected static ?string $navigationGroup = 'Monitoring';
-    protected static ?int $navigationSort = 4;
-    protected static ?string $modelLabel      = 'Pengumpulan Tugas';
+
+    public static function getNavigationIcon(): string | null
+    {
+        return 'heroicon-o-clipboard-document-check';
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return 'Penilaian Tugas';
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return 'Monitoring';
+    }
+
+    public static function getNavigationSort(): ?int
+    {
+        return 4;
+    }
+
+    public static function getModelLabel(): string
+    {
+        return 'Pengumpulan Tugas';
+    }
 
     public static function getNavigationBadge(): ?string
     {
@@ -29,10 +53,10 @@ class PengumpulanTugasResource extends Resource
         return 'warning';
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
-            Forms\Components\Section::make('Detail Pengumpulan')
+        return $schema->schema([
+            Section::make('Detail Pengumpulan')
                 ->schema([
                     Forms\Components\Select::make('user_id')
                         ->label('Mahasiswa')
@@ -45,6 +69,11 @@ class PengumpulanTugasResource extends Resource
                     Forms\Components\DateTimePicker::make('dikumpulkan_at')
                         ->label('Waktu Pengumpulan')
                         ->disabled(),
+                    Forms\Components\Placeholder::make('status_waktu')
+                        ->label('Status Waktu')
+                        ->content(fn ($record) => $record && $record->isLate() 
+                            ? new \Illuminate\Support\HtmlString('<span style="color: red; font-weight: bold;">Terlambat ' . $record->terlambat_text . '</span>') 
+                            : new \Illuminate\Support\HtmlString('<span style="color: green; font-weight: bold;">Tepat Waktu</span>')),
                     Forms\Components\Textarea::make('catatan')
                         ->label('Catatan Mahasiswa')
                         ->disabled()
@@ -61,7 +90,7 @@ class PengumpulanTugasResource extends Resource
                         ->columnSpanFull(),
                 ])->columns(2),
 
-            Forms\Components\Section::make('Penilaian Admin')
+            Section::make('Penilaian Admin')
                 ->schema([
                     Forms\Components\Select::make('status')
                         ->label('Status')
@@ -100,7 +129,9 @@ class PengumpulanTugasResource extends Resource
                 Tables\Columns\TextColumn::make('dikumpulkan_at')
                     ->label('Dikumpulkan')
                     ->dateTime('d M Y, H:i')
-                    ->sortable(),
+                    ->sortable()
+                    ->description(fn (PengumpulanTugas $record): string => $record->isLate() ? 'Terlambat ' . $record->terlambat_text : 'Tepat Waktu')
+                    ->color(fn (PengumpulanTugas $record): string => $record->isLate() ? 'danger' : 'gray'),
                 Tables\Columns\TextColumn::make('nilai')
                     ->label('Nilai')
                     ->default('—')
@@ -111,13 +142,16 @@ class PengumpulanTugasResource extends Resource
                         $state > 0   => 'danger',
                         default      => 'gray',
                     }),
-                Tables\Columns\BadgeColumn::make('status')
+                
+                Tables\Columns\TextColumn::make('status')
                     ->label('Status')
-                    ->colors([
-                        'info'    => 'dikumpulkan',
-                        'success' => 'dinilai',
-                        'warning' => 'revisi',
-                    ])
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'dikumpulkan' => 'info',
+                        'dinilai'     => 'success',
+                        'revisi'      => 'warning',
+                        default       => 'gray',
+                    })
                     ->formatStateUsing(fn($state) => match($state) {
                         'dikumpulkan' => 'Dikumpulkan',
                         'dinilai'     => 'Dinilai',
@@ -138,18 +172,20 @@ class PengumpulanTugasResource extends Resource
                     ->relationship('tugas', 'judul'),
             ])
             ->actions([
-		Tables\Actions\Action::make('download')
-   		 ->label('Download')
-   		 ->icon('heroicon-o-arrow-down-tray')
-   		 ->color('success')
-   		 ->action(function (PengumpulanTugas $record) {
-   		     return response()->download(
-   		         storage_path('app/public/' . $record->file_path),
-   		         basename($record->file_path)
-   		     );
-   		 })
-   		 ->visible(fn(PengumpulanTugas $record) => $record->file_path !== null),
-                Tables\Actions\Action::make('nilai')
+                // PENTING: Di v5, Action::make() sudah universal
+                Action::make('download')
+                    ->label('Download')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->color('success')
+                    ->action(function (PengumpulanTugas $record) {
+                        return response()->download(
+                            storage_path('app/public/' . $record->file_path),
+                            basename($record->file_path)
+                        );
+                    })
+                    ->visible(fn(PengumpulanTugas $record) => $record->file_path !== null),
+
+                Action::make('nilai')
                     ->label('Beri Nilai')
                     ->icon('heroicon-o-star')
                     ->color('warning')
@@ -164,9 +200,6 @@ class PengumpulanTugasResource extends Resource
                         Forms\Components\TextInput::make('nilai')
                             ->label('Nilai (0-100)')
                             ->numeric()
-                            ->minValue(0)
-                            ->maxValue(100)
-                            ->step(0.5)
                             ->required(),
                         Forms\Components\Textarea::make('feedback')
                             ->label('Feedback')
@@ -178,9 +211,11 @@ class PengumpulanTugasResource extends Resource
                             'nilai'    => $data['nilai'],
                             'feedback' => $data['feedback'],
                         ]);
+                        Notification::make()->title('Tugas dinilai')->success()->send();
                     })
                     ->visible(fn(PengumpulanTugas $record) => $record->status === 'dikumpulkan'),
-                Tables\Actions\EditAction::make()->label('Edit'),
+
+                EditAction::make()->label('Edit'),
             ])
             ->defaultSort('dikumpulkan_at', 'desc');
     }

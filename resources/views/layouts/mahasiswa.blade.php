@@ -12,7 +12,7 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: { "primary": "#1152d4" },
+                    colors: { "primary": "#1a2fa1" },
                     fontFamily: { "sans": ["Public Sans", "sans-serif"] },
                 }
             }

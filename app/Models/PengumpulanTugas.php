@@ -43,6 +43,31 @@ class PengumpulanTugas extends Model
         return $this->dikumpulkan_at && $this->tugas->deadline < $this->dikumpulkan_at;
     }
 
+    public function getTerlambatTextAttribute(): string
+    {
+        if (!$this->isLate()) {
+            return 'Tepat Waktu';
+        }
+
+        $diff = $this->dikumpulkan_at->diff($this->tugas->deadline);
+        $parts = [];
+        if ($diff->days > 0) {
+            $parts[] = $diff->days . ' hari';
+        }
+        if ($diff->h > 0) {
+            $parts[] = $diff->h . ' jam';
+        }
+        if ($diff->days == 0 && $diff->h == 0 && $diff->i > 0) {
+            $parts[] = $diff->i . ' menit';
+        }
+
+        if (empty($parts)) {
+            return 'beberapa detik';
+        }
+
+        return implode(' ', $parts);
+    }
+
     public function getStatusBadgeColorAttribute(): string
     {
         return match ($this->status) {

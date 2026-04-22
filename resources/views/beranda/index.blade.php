@@ -288,7 +288,7 @@
 
                 {{-- Upload CV --}}
                 <div class="flex flex-col gap-1.5">
-                    <label class="text-sm font-semibold text-slate-700">Upload CV (opsional)</label>
+                    <label class="text-sm font-semibold text-slate-700">Upload Dokumen/CV (opsional)</label>
                     <label class="relative border-2 border-dashed border-slate-300 rounded-xl hover:border-primary transition-colors cursor-pointer bg-slate-50 hover:bg-primary/5 block">
                         <div id="upload-placeholder" class="flex flex-col items-center justify-center py-8 pointer-events-none">
                             <span class="material-symbols-outlined text-3xl text-slate-400 mb-2">upload_file</span>

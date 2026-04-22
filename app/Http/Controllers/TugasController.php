@@ -41,9 +41,7 @@ class TugasController extends Controller
             return back()->with('error', 'Tugas sudah dinilai, tidak dapat diubah lagi.');
         }
 
-        if ($tugas->isOverdue() && (!str_contains($pengumpulan?->status, 'revisi'))) {
-            return back()->with('error', 'Tugas sudah kadaluarsa, tidak dapat dikumpulkan.');
-        }
+        // Kita hapus validasi isOverdue() agar mahasiswa tetap bisa mengumpulkan tugas meski terlambat
 
         $request->validate([
             'file_tugas' => 'required_without:catatan|file|mimes:pdf,doc,docx,zip|max:10240',

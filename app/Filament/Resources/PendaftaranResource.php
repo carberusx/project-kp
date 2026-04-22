@@ -5,20 +5,50 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\PendaftaranResource\Pages;
 use App\Models\Pendaftaran;
 use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema; 
+use Filament\Schemas\Components\Section; 
+use Filament\Schemas\Components\Utilities\Get; // <-- Import Get versi Schemas
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Notifications\Notification;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 class PendaftaranResource extends Resource
 {
     protected static ?string $model = Pendaftaran::class;
-    protected static ?string $navigationIcon  = 'heroicon-o-user-group';
-    protected static ?string $navigationLabel = 'Pendaftar';
-    protected static ?string $navigationGroup = 'Manajemen';
-    protected static ?int $navigationSort = 1;
-    protected static ?string $modelLabel      = 'Pendaftar';
-    protected static ?string $pluralModelLabel = 'Daftar Pendaftar';
+
+    public static function getNavigationIcon(): string | null
+    {
+        return 'heroicon-o-user-group';
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return 'Pendaftar';
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return 'Manajemen';
+    }
+
+    public static function getNavigationSort(): ?int
+    {
+        return 1;
+    }
+
+    public static function getModelLabel(): string
+    {
+        return 'Pendaftar';
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return 'Daftar Pendaftar';
+    }
 
     public static function getNavigationBadge(): ?string
     {
@@ -30,10 +60,10 @@ class PendaftaranResource extends Resource
         return 'warning';
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
-            Forms\Components\Section::make('Data Pendaftar')
+        return $schema->schema([
+            Section::make('Data Pendaftar')
                 ->schema([
                     Forms\Components\TextInput::make('nama_lengkap')
                         ->label('Nama Lengkap')
@@ -69,7 +99,7 @@ class PendaftaranResource extends Resource
                         ->columnSpanFull(),
                 ])->columns(2),
 
-            Forms\Components\Section::make('Keputusan Admin')
+            Section::make('Keputusan Admin')
                 ->schema([
                     Forms\Components\Select::make('status')
                         ->label('Status')
@@ -78,16 +108,19 @@ class PendaftaranResource extends Resource
                             'diterima'   => 'Diterima',
                             'ditolak'    => 'Ditolak',
                         ])
-                        ->required(),
+                        ->required()
+                        ->live(), // Tambahkan live agar reaktif saat status berubah
                     Forms\Components\Textarea::make('catatan_admin')
                         ->label('Catatan Admin')
                         ->rows(3),
                     Forms\Components\DatePicker::make('tanggal_mulai')
                         ->label('Tanggal Masuk Magang')
-                        ->required(fn(\Filament\Forms\Get $get) => $get('status') === 'diterima'),
+                        // KOREKSI TYPE-HINT GET DI SINI
+                        ->required(fn(Get $get) => $get('status') === 'diterima'),
                     Forms\Components\DatePicker::make('tanggal_selesai')
                         ->label('Tanggal Keluar Magang')
-                        ->required(fn(\Filament\Forms\Get $get) => $get('status') === 'diterima'),
+                        // KOREKSI TYPE-HINT GET DI SINI
+                        ->required(fn(Get $get) => $get('status') === 'diterima'),
                 ])->columns(2),
         ]);
     }
@@ -131,19 +164,18 @@ class PendaftaranResource extends Resource
                     ->label('Tgl Keluar')
                     ->date('d M Y')
                     ->toggleable(),
-                Tables\Columns\BadgeColumn::make('status')
+                
+                Tables\Columns\TextColumn::make('status')
                     ->label('Status')
-                    ->colors([
-                        'warning' => 'menunggu',
-                        'success' => 'diterima',
-                        'danger'  => 'ditolak',
-                    ])
-                    ->formatStateUsing(fn($state) => match($state) {
-                        'menunggu'  => 'Menunggu',
-                        'diterima'  => 'Diterima',
-                        'ditolak'   => 'Ditolak',
-                        default     => $state,
-                    }),
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'menunggu' => 'warning',
+                        'diterima' => 'success',
+                        'ditolak'  => 'danger',
+                        default    => 'gray',
+                    })
+                    ->formatStateUsing(fn($state) => ucfirst($state)),
+
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Tanggal Daftar')
                     ->date('d M Y')
@@ -158,14 +190,14 @@ class PendaftaranResource extends Resource
                     ]),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('terima')
+                \Filament\Actions\EditAction::make(),
+                
+                \Filament\Actions\Action::make('terima')
                     ->label('Terima')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->requiresConfirmation()
                     ->modalHeading('Terima Pendaftar')
-                    ->modalDescription('Akun login akan otomatis dibuat. Silakan tentukan tanggal masuk dan keluar mahasiswa.')
                     ->form([
                         Forms\Components\DatePicker::make('tanggal_mulai')
                             ->label('Tanggal Masuk')
@@ -177,24 +209,17 @@ class PendaftaranResource extends Resource
                             ->required(),
                     ])
                     ->action(function (array $data, Pendaftaran $record) {
-                        // Cek apakah akun sudah pernah dibuat
                         if ($record->user_id && $record->user) {
-                            \Filament\Notifications\Notification::make()
-                                ->title('Akun Sudah Ada')
-                                ->body("Akun mahasiswa untuk {$record->nama_lengkap} sudah pernah dibuat sebelumnya.")
-                                ->warning()
-                                ->send();
+                            Notification::make()->title('Akun Sudah Ada')->warning()->send();
                             return;
                         }
 
-                        // Generate password sementara
-                        $tempPassword = \Illuminate\Support\Str::random(8);
+                        $tempPassword = Str::random(8);
 
-                        // Buat akun mahasiswa dengan data lengkap dari pendaftaran
                         $user = \App\Models\User::create([
                             'name'        => $record->nama_lengkap,
                             'email'       => $record->email,
-                            'password'    => \Illuminate\Support\Facades\Hash::make($tempPassword),
+                            'password'    => Hash::make($tempPassword),
                             'role'        => 'mahasiswa',
                             'nim'         => $record->nim,
                             'universitas' => $record->universitas,
@@ -202,7 +227,6 @@ class PendaftaranResource extends Resource
                             'telepon'     => $record->no_telpon,
                         ]);
 
-                        // Update pendaftaran: status diterima, link user, simpan password di catatan
                         $record->update([
                             'status'          => 'diterima',
                             'user_id'         => $user->id,
@@ -211,53 +235,38 @@ class PendaftaranResource extends Resource
                             'catatan_admin'   => 'Akun dibuat otomatis. Password sementara: ' . $tempPassword,
                         ]);
 
-                        // Kirim email notifikasi diterima
                         \Illuminate\Support\Facades\Mail::to($record->email)->send(
                             new \App\Mail\PendaftaranDiterima($record, $tempPassword)
                         );
 
-                        \Filament\Notifications\Notification::make()
-                            ->title('Pendaftar Diterima')
-                            ->body("Akun mahasiswa untuk {$record->nama_lengkap} berhasil dibuat.\nNIM: {$record->nim}\nTelepon: {$record->no_telpon}\nPassword: {$tempPassword}")
-                            ->success()
-                            ->send();
+                        Notification::make()->title('Pendaftar Diterima')->success()->send();
                     })
                     ->visible(fn(Pendaftaran $record) => $record->status === 'menunggu'),
-                Tables\Actions\Action::make('tolak')
+
+                \Filament\Actions\Action::make('tolak')
                     ->label('Tolak')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
                     ->requiresConfirmation()
-                    ->modalHeading('Tolak Pendaftar')
-                    ->modalDescription('Apakah Anda yakin ingin menolak pendaftar ini? Anda dapat memberikan alasan penolakan secara opsional yang akan dikirim melalui email.')
                     ->form([
                         Forms\Components\Textarea::make('catatan_admin')
-                            ->label('Alasan Penolakan (Opsional)')
-                            ->placeholder('Contoh: Kuota penuh, Jurusan tidak linier, dll.')
+                            ->label('Alasan Penolakan')
                             ->rows(3),
                     ])
                     ->action(function(array $data, Pendaftaran $record) {
-                        $updateData = ['status' => 'ditolak'];
-                        if (!empty($data['catatan_admin'])) {
-                            $updateData['catatan_admin'] = $data['catatan_admin'];
-                        }
-                        
-                        $record->update($updateData);
-                        
+                        $record->update(['status' => 'ditolak', 'catatan_admin' => $data['catatan_admin'] ?? null]);
+
                         \Illuminate\Support\Facades\Mail::to($record->email)->send(
                             new \App\Mail\PendaftaranDitolak($record)
                         );
 
-                        \Filament\Notifications\Notification::make()
-                            ->title('Pendaftar Ditolak')
-                            ->success()
-                            ->send();
+                        Notification::make()->title('Pendaftar Ditolak')->success()->send();
                     })
                     ->visible(fn(Pendaftaran $record) => $record->status === 'menunggu'),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                \Filament\Actions\BulkActionGroup::make([
+                    \Filament\Actions\DeleteBulkAction::make(),
                 ]),
             ])
             ->defaultSort('created_at', 'desc');

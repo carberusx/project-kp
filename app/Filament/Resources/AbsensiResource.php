@@ -5,24 +5,49 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\AbsensiResource\Pages;
 use App\Models\Absensi;
 use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema; // <-- Versi v5
+use Filament\Schemas\Components\Section; // <-- Versi v5
+use Filament\Schemas\Components\Utilities\Get; // <-- Versi v5
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Actions; // <-- Untuk Action Edit/Delete/View
 
 class AbsensiResource extends Resource
 {
     protected static ?string $model = Absensi::class;
-    protected static ?string $navigationIcon  = 'heroicon-o-calendar-days';
-    protected static ?string $navigationLabel = 'Log Absensi';
-    protected static ?string $navigationGroup = 'Monitoring';
-    protected static ?int $navigationSort = 2;
-    protected static ?string $modelLabel      = 'Absensi';
 
-    public static function form(Form $form): Form
+    // --- Mengubah Property Menjadi Method (Standar v5) ---
+    public static function getNavigationIcon(): string | null
     {
-        return $form->schema([
-            Forms\Components\Section::make('Informasi Utama')
+        return 'heroicon-o-calendar-days';
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return 'Log Absensi';
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return 'Monitoring';
+    }
+
+    public static function getNavigationSort(): ?int
+    {
+        return 2;
+    }
+
+    public static function getModelLabel(): string
+    {
+        return 'Absensi';
+    }
+
+    // --- Parameter Form Menjadi Schema ---
+    public static function form(Schema $schema): Schema
+    {
+        return $schema->schema([
+            Section::make('Informasi Utama')
                 ->schema([
                     Forms\Components\Select::make('user_id')
                         ->label('Mahasiswa')
@@ -50,7 +75,7 @@ class AbsensiResource extends Resource
                         ->columnSpanFull(),
                 ])->columns(2),
 
-            Forms\Components\Section::make('Bukti Kehadiran (Selfie)')
+            Section::make('Bukti Kehadiran (Selfie)')
                 ->schema([
                     Forms\Components\Placeholder::make('foto_masuk_view')
                         ->label('Foto Masuk')
@@ -65,7 +90,7 @@ class AbsensiResource extends Resource
                             : 'Belum ada foto'),
                 ])->columns(2),
 
-            Forms\Components\Section::make('Informasi Lokasi GPS')
+            Section::make('Informasi Lokasi GPS')
                 ->schema([
                     Forms\Components\TextInput::make('alamat_masuk')
                         ->label('Alamat Masuk')
@@ -143,15 +168,20 @@ class AbsensiResource extends Resource
                     )
                     ->openUrlInNewTab()
                     ->toggleable(),
-                Tables\Columns\BadgeColumn::make('status')
+                
+                // Mengganti BadgeColumn ke TextColumn badge v5
+                Tables\Columns\TextColumn::make('status')
                     ->label('Status')
-                    ->colors([
-                        'success' => 'hadir',
-                        'warning' => 'izin',
-                        'info'    => 'sakit',
-                        'danger'  => 'alpha',
-                    ])
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'hadir' => 'success',
+                        'izin'  => 'warning',
+                        'sakit' => 'info',
+                        'alpha' => 'danger',
+                        default => 'gray',
+                    })
                     ->formatStateUsing(fn($state) => ucfirst($state)),
+                    
                 Tables\Columns\TextColumn::make('keterangan')
                     ->label('Keterangan')
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -169,9 +199,14 @@ class AbsensiResource extends Resource
                     ->query(fn($query) => $query->whereDate('tanggal', today())),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                \Filament\Actions\ViewAction::make(),
+                \Filament\Actions\EditAction::make(),
+                \Filament\Actions\DeleteAction::make(),
+            ])
+            ->bulkActions([
+                \Filament\Actions\BulkActionGroup::make([
+                    \Filament\Actions\DeleteBulkAction::make(),
+                ]),
             ])
             ->defaultSort('tanggal', 'desc');
     }

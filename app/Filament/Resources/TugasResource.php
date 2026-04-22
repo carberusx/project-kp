@@ -5,23 +5,46 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\TugasResource\Pages;
 use App\Models\Tugas;
 use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema; // <-- Update v5
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Actions; // <-- Untuk Action v5
 
 class TugasResource extends Resource
 {
     protected static ?string $model = Tugas::class;
-    protected static ?string $navigationIcon  = 'heroicon-o-clipboard-document-list';
-    protected static ?string $navigationLabel = 'Tugas';
-    protected static ?string $navigationGroup = 'Monitoring';
-    protected static ?int $navigationSort = 3;
-    protected static ?string $modelLabel      = 'Tugas';
 
-    public static function form(Form $form): Form
+    // --- Perubahan 1: Navigation Property ke Method ---
+    public static function getNavigationIcon(): string | null
     {
-        return $form->schema([
+        return 'heroicon-o-clipboard-document-list';
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return 'Tugas';
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return 'Monitoring';
+    }
+
+    public static function getNavigationSort(): ?int
+    {
+        return 3;
+    }
+
+    public static function getModelLabel(): string
+    {
+        return 'Tugas';
+    }
+
+    // --- Perubahan 2: Parameter Form Menjadi Schema ---
+    public static function form(Schema $schema): Schema
+    {
+        return $schema->schema([
             Forms\Components\TextInput::make('judul')
                 ->label('Judul Tugas')
                 ->required()
@@ -80,15 +103,20 @@ class TugasResource extends Resource
                     ->label('Judul')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\BadgeColumn::make('tipe')
+
+                // --- Perubahan 3: BadgeColumn ke TextColumn badge() ---
+                Tables\Columns\TextColumn::make('tipe')
                     ->label('Tipe')
-                    ->colors([
-                        'primary' => 'laporan',
-                        'success' => 'proyek',
-                        'warning' => 'evaluasi',
-                        'gray'    => 'lainnya',
-                    ])
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'laporan'  => 'primary',
+                        'proyek'   => 'success',
+                        'evaluasi' => 'warning',
+                        'lainnya'  => 'gray',
+                        default    => 'gray',
+                    })
                     ->formatStateUsing(fn($state) => ucfirst($state)),
+
                 Tables\Columns\TextColumn::make('deadline')
                     ->label('Deadline')
                     ->dateTime('d M Y H:i')
@@ -107,8 +135,13 @@ class TugasResource extends Resource
                     ->boolean(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                \Filament\Actions\EditAction::make(),
+                \Filament\Actions\DeleteAction::make(),
+            ])
+            ->bulkActions([
+                \Filament\Actions\BulkActionGroup::make([
+                    \Filament\Actions\DeleteBulkAction::make(),
+                ]),
             ])
             ->defaultSort('deadline', 'asc');
     }

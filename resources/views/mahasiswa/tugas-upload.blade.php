@@ -73,10 +73,9 @@
 
         @php
             $isDinilai = $pengumpulan && $pengumpulan->status === 'dinilai';
-            $isKadaluarsa = $tugas->isOverdue() && $pengumpulan?->status !== 'revisi' && !$isDinilai;
         @endphp
 
-        @if(!($isDinilai || $isKadaluarsa))
+        @if(!$isDinilai)
         {{-- Form Upload --}}
         <form action="{{ route('mahasiswa.tugas.submit', $tugas) }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-5">
             @csrf
@@ -90,6 +89,21 @@
                     </li>
                     @endforeach
                 </ul>
+            </div>
+            @endif
+
+            @if($tugas->isOverdue())
+            <div class="p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-800">
+                <div class="flex items-center gap-2 font-semibold mb-1">
+                    <span class="material-symbols-outlined text-lg">warning</span>
+                    Peringatan: Lewat Batas Waktu
+                </div>
+                Batas waktu pengumpulan telah lewat <strong>{{ $tugas->terlambat_text }}</strong> yang lalu. 
+                @if($pengumpulan)
+                    Jika Anda mengupload ulang sekarang, pengumpulan ini akan dihitung sebagai terlambat.
+                @else
+                    Tugas yang Anda kumpulkan akan ditandai sebagai terlambat.
+                @endif
             </div>
             @endif
 
@@ -191,44 +205,6 @@
                 </div>
                 @endif
             </div>
-
-            <div class="pt-4">
-                <a href="{{ route('mahasiswa.tugas.index') }}" class="flex items-center justify-center gap-2 border-2 border-slate-200 text-slate-600 font-bold py-3.5 px-6 rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all text-sm w-full">
-                    
-                    Kembali ke Daftar Tugas
-                </a>
-            </div>
-        </div>
-        @elseif($isKadaluarsa)
-        {{-- Detail Kadaluarsa (Read-only) --}}
-        <div class="p-6 space-y-5">
-            <div class="p-5 bg-red-50 border-red-200 text-red-800 border rounded-2xl">
-                <div class="flex items-center gap-2 text-lg font-bold mb-2">
-                    <span class="material-symbols-outlined text-2xl">event_busy</span>
-                    Tugas Kadaluarsa
-                </div>
-                <p class="text-sm opacity-80 mb-1">Batas waktu pengumpulan telah lewat pada {{ $tugas->deadline->isoFormat('D MMMM Y, HH:mm') }}.</p>
-                <p class="text-sm font-medium mt-1">Anda tidak dapat mengirim atau mengubah tugas.</p>
-            </div>
-
-            @if($pengumpulan)
-            <div class="bg-slate-50 border border-slate-200 rounded-2xl p-5">
-                @if($pengumpulan->file_path)
-                <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">File yang Telah Dikumpulkan</p>
-                <a href="{{ asset('storage/' . $pengumpulan->file_path) }}" target="_blank" class="inline-flex items-center gap-3 text-primary bg-white border border-slate-200 shadow-sm hover:border-primary hover:shadow px-5 py-3 rounded-xl transition-all font-semibold">
-                    <span class="material-symbols-outlined text-2xl">description</span>
-                    Dokumen Tugas Anda
-                </a>
-                @endif
-
-                @if($pengumpulan->catatan)
-                <div class="mt-5 pt-4 border-t border-slate-200">
-                    <p class="text-xs font-bold text-slate-500 mb-2">Pesan yang Disertakan:</p>
-                    <p class="text-sm text-slate-800 font-medium italic opacity-80 leading-relaxed">"{{ $pengumpulan->catatan }}"</p>
-                </div>
-                @endif
-            </div>
-            @endif
 
             <div class="pt-4">
                 <a href="{{ route('mahasiswa.tugas.index') }}" class="flex items-center justify-center gap-2 border-2 border-slate-200 text-slate-600 font-bold py-3.5 px-6 rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all text-sm w-full">

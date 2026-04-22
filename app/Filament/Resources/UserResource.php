@@ -5,31 +5,52 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\UserResource\Pages;
 use App\Models\User;
 use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema; 
+use Filament\Schemas\Components\Section; // <-- PENTING: Namespace Layout Baru
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Actions; // <-- PENTING: Namespace Actions Baru untuk v5
 use Illuminate\Support\Facades\Hash;
 
 class UserResource extends Resource
 {
     protected static ?string $model = User::class;
-    protected static ?string $navigationIcon  = 'heroicon-o-users';
-    protected static ?string $navigationLabel = 'Akun Mahasiswa';
-    protected static ?string $navigationGroup = 'Manajemen';
-    protected static ?int $navigationSort = 2;
-    protected static ?string $modelLabel      = 'Akun';
+
+    public static function getNavigationIcon(): string | null
+    {
+        return 'heroicon-o-users';
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return 'Akun Mahasiswa';
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return 'Manajemen';
+    }
+
+    public static function getNavigationSort(): ?int
+    {
+        return 2;
+    }
+
+    public static function getModelLabel(): string
+    {
+        return 'Akun';
+    }
 
     public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
     {
-        // Hanya tampilkan mahasiswa, bukan admin
         return parent::getEloquentQuery()->where('role', 'mahasiswa');
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
-            Forms\Components\Section::make('Informasi Akun')
+        return $schema->schema([
+            Section::make('Informasi Akun')
                 ->schema([
                     Forms\Components\TextInput::make('name')
                         ->label('Nama Lengkap')
@@ -50,7 +71,7 @@ class UserResource extends Resource
                         ->helperText('Kosongkan jika tidak ingin mengubah password'),
                 ])->columns(2),
 
-            Forms\Components\Section::make('Data Mahasiswa')
+            Section::make('Data Mahasiswa')
                 ->schema([
                     Forms\Components\TextInput::make('nim')
                         ->label('NIM')
@@ -105,12 +126,13 @@ class UserResource extends Resource
             ])
             ->filters([])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                // SOLUSI: Menggunakan Actions\ bukan Tables\Actions\
+                Actions\EditAction::make(),
+                Actions\DeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                Actions\BulkActionGroup::make([
+                    Actions\DeleteBulkAction::make(),
                 ]),
             ])
             ->defaultSort('created_at', 'desc');

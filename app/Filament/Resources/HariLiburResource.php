@@ -5,26 +5,49 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\HariLiburResource\Pages;
 use App\Models\HariLibur;
 use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Actions; // <-- Tambahan PENTING untuk v5
 
 class HariLiburResource extends Resource
 {
     protected static ?string $model = HariLibur::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-calendar-days';
-    protected static ?string $navigationLabel = 'Hari Libur';
-    protected static ?string $navigationGroup = 'Manajemen';
-    protected static ?string $modelLabel = 'Hari Libur';
-    protected static ?int $navigationSort = 3;
-
-    public static function form(Form $form): Form
+    // --- PERUBAHAN 1: Property Navigasi Diubah Menjadi Method ---
+    public static function getNavigationIcon(): string | null
     {
-        return $form
+        return 'heroicon-o-calendar-days';
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return 'Hari Libur';
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return 'Manajemen';
+    }
+
+    public static function getModelLabel(): string
+    {
+        return 'Hari Libur';
+    }
+
+    public static function getNavigationSort(): ?int
+    {
+        return 3;
+    }
+
+    // --- PERUBAHAN 2: Parameter Form Menjadi Schema & Section ---
+    public static function form(Schema $schema): Schema
+    {
+        return $schema
             ->schema([
-                Forms\Components\Section::make('Data Hari Libur')
+                Section::make('Data Hari Libur')
                     ->schema([
                         Forms\Components\DatePicker::make('tanggal')
                             ->label('Tanggal Libur')
@@ -56,12 +79,14 @@ class HariLiburResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                // PERBAIKAN: Menggunakan namespace Actions v5
+                Actions\EditAction::make(),
+                Actions\DeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                // PERBAIKAN: Menggunakan namespace Actions v5
+                Actions\BulkActionGroup::make([
+                    Actions\DeleteBulkAction::make(),
                 ]),
             ])
             ->defaultSort('tanggal', 'desc');

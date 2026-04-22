@@ -41,8 +41,8 @@ Schedule::call(function () {
                 'user_id'    => $mahasiswa->id,
                 'tanggal'    => $today,
                 'status'     => 'alpha',
-                'keterangan' => 'Sistem otomatis: Tidak melakukan absensi hingga pukul 17:00',
+                'keterangan' => 'Sistem otomatis: Tidak melakukan absensi hingga pukul 19:00',
             ]);
         }
     }
-})->dailyAt('23:59');
+})->dailyAt('19:00');

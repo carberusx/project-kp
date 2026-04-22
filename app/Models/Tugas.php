@@ -46,6 +46,31 @@ class Tugas extends Model
         return max(0, now()->diffInDays($this->deadline, false));
     }
 
+    public function getTerlambatTextAttribute(): string
+    {
+        if (!$this->isOverdue()) {
+            return '';
+        }
+        
+        $diff = now()->diff($this->deadline);
+        $parts = [];
+        if ($diff->days > 0) {
+            $parts[] = $diff->days . ' hari';
+        }
+        if ($diff->h > 0) {
+            $parts[] = $diff->h . ' jam';
+        }
+        if ($diff->days == 0 && $diff->h == 0 && $diff->i > 0) {
+            $parts[] = $diff->i . ' menit';
+        }
+        
+        if (empty($parts)) {
+            return 'beberapa detik';
+        }
+        
+        return implode(' ', $parts);
+    }
+
     public function pengumpulanByUser(int $userId): ?PengumpulanTugas
     {
         return $this->pengumpulans()->where('user_id', $userId)->first();

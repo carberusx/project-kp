@@ -106,9 +106,9 @@
                         Kumpulkan
                     </a>
                 @else
-                    <a href="{{ route('mahasiswa.tugas.upload', $t) }}" class="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-bold rounded-xl bg-red-100 text-red-700 hover:bg-red-200 transition-colors cursor-pointer w-full md:w-auto" title="Lihat detail tugas kadaluarsa">
-                        <span class="material-symbols-outlined text-base">event_busy</span>
-                        Kadaluarsa
+                    <a href="{{ route('mahasiswa.tugas.upload', $t) }}" class="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-bold rounded-xl bg-red-100 text-red-700 hover:bg-red-200 transition-colors cursor-pointer w-full md:w-auto" title="Kumpulkan tugas (terlambat)">
+                        <span class="material-symbols-outlined text-base">warning</span>
+                        Kumpulkan (Terlambat)
                     </a>
                 @endif
             </div>
