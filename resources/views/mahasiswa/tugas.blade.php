@@ -8,10 +8,10 @@
 <div class="space-y-4">
 
     @forelse($tugas as $t)
-    <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-all">
+    <div class="bg-white rounded-md border border-slate-200 p-6 shadow-sm hover:shadow-md transition-all">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div class="flex items-start gap-4">
-                <div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0
+                <div class="w-12 h-12 rounded-md flex items-center justify-center flex-shrink-0
                     {{ $t->pengumpulan ? 'bg-green-100 text-green-600' : ($t->isOverdue() ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-600') }}">
                     <span class="material-symbols-outlined text-2xl">
                         {{ $t->pengumpulan ? 'task_alt' : ($t->isOverdue() ? 'warning' : 'assignment') }}
@@ -76,7 +76,7 @@
                                 Perlu Revisi
                             </span>
                             <a href="{{ route('mahasiswa.tugas.upload', $t) }}"
-                            class="inline-flex items-center gap-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-xl text-xs transition-all shadow-sm">
+                            class="inline-flex items-center gap-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-md text-xs transition-all shadow-sm">
                                 <span class="material-symbols-outlined text-sm">upload_file</span>
                                 Kirim Ulang
                             </a>
@@ -94,19 +94,19 @@
                         </div>
                     @else
                         {{-- Sudah dikumpulkan, menunggu penilaian --}}
-                        <a href="{{ route('mahasiswa.tugas.upload', $t) }}" class="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-bold rounded-xl bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors cursor-pointer w-full md:w-auto" title="Klik untuk mengecek tugas">
+                        <a href="{{ route('mahasiswa.tugas.upload', $t) }}" class="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-bold rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors cursor-pointer w-full md:w-auto" title="Klik untuk mengecek tugas">
                             <span class="material-symbols-outlined text-base">check_circle</span>
                             Dikumpulkan
                         </a>
                     @endif
                 @elseif(!$t->isOverdue())
                     <a href="{{ route('mahasiswa.tugas.upload', $t) }}"
-                       class="inline-flex items-center justify-center gap-1.5 bg-primary hover:bg-primary/90 text-white font-bold py-2.5 px-5 rounded-xl text-sm transition-all shadow-md shadow-primary/20 w-full md:w-auto">
+                       class="inline-flex items-center justify-center gap-1.5 bg-primary hover:bg-primary/90 text-white font-bold py-2.5 px-5 rounded-md text-sm transition-all shadow-md shadow-primary/20 w-full md:w-auto">
                         <span class="material-symbols-outlined text-base">upload_file</span>
                         Kumpulkan
                     </a>
                 @else
-                    <a href="{{ route('mahasiswa.tugas.upload', $t) }}" class="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-bold rounded-xl bg-red-100 text-red-700 hover:bg-red-200 transition-colors cursor-pointer w-full md:w-auto" title="Kumpulkan tugas (terlambat)">
+                    <a href="{{ route('mahasiswa.tugas.upload', $t) }}" class="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-bold rounded-md bg-red-100 text-red-700 hover:bg-red-200 transition-colors cursor-pointer w-full md:w-auto" title="Kumpulkan tugas (terlambat)">
                         <span class="material-symbols-outlined text-base">warning</span>
                         Kumpulkan (Terlambat)
                     </a>
@@ -116,7 +116,7 @@
     </div>
 
     @empty
-    <div class="bg-white rounded-2xl border border-slate-200 p-16 text-center">
+    <div class="bg-white rounded-md border border-slate-200 p-16 text-center">
         <span class="material-symbols-outlined text-5xl text-slate-300 mb-3 block">assignment</span>
         <h3 class="font-bold text-slate-500 mb-1">Tidak ada tugas aktif</h3>
         <p class="text-sm text-slate-400">Tugas baru akan muncul di sini saat admin menambahkannya.</p>

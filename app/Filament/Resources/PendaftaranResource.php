@@ -189,6 +189,36 @@ class PendaftaranResource extends Resource
                         'ditolak'    => 'Ditolak',
                     ]),
             ])
+            ->headerActions([
+                \Filament\Actions\Action::make('export_csv_langsung')
+                    ->label('Export CSV')
+                    ->icon('heroicon-o-document-arrow-down')
+                    ->color('success')
+                    ->action(function ($livewire) {
+                        $records = $livewire->getFilteredTableQuery()->get();
+                        
+                        $filename = 'export-pendaftar-' . date('Ymd_His') . '.csv';
+                        return response()->streamDownload(function () use ($records) {
+                            $handle = fopen('php://output', 'w');
+                            fputcsv($handle, ['Nama Lengkap', 'Email', 'NIM', 'Nomor Telepon', 'Universitas', 'Jurusan', 'Status', 'Tanggal Daftar']);
+                            foreach ($records as $record) {
+                                fputcsv($handle, [
+                                    $record->nama_lengkap ?? '-',
+                                    $record->email ?? '-',
+                                    $record->nim ?? '-',
+                                    $record->no_telpon ?? '-',
+                                    $record->universitas ?? '-',
+                                    $record->jurusan ?? '-',
+                                    $record->status ?? '-',
+                                    $record->created_at ? $record->created_at->format('Y-m-d H:i') : '-',
+                                ]);
+                            }
+                            fclose($handle);
+                        }, $filename, [
+                            'Content-Type' => 'text/csv',
+                        ]);
+                    }),
+            ])
             ->actions([
                 \Filament\Actions\EditAction::make(),
                 
@@ -207,6 +237,10 @@ class PendaftaranResource extends Resource
                             ->label('Tanggal Keluar')
                             ->default(fn (Pendaftaran $record) => $record->tanggal_selesai)
                             ->required(),
+                        Forms\Components\Textarea::make('catatan_admin')
+                            ->label('Catatan')
+                            ->placeholder('Contoh: Silakan ambil surat balasan di pos satpam...')
+                            ->rows(3),
                     ])
                     ->action(function (array $data, Pendaftaran $record) {
                         if ($record->user_id && $record->user) {
@@ -217,14 +251,15 @@ class PendaftaranResource extends Resource
                         $tempPassword = Str::random(8);
 
                         $user = \App\Models\User::create([
-                            'name'        => $record->nama_lengkap,
-                            'email'       => $record->email,
-                            'password'    => Hash::make($tempPassword),
-                            'role'        => 'mahasiswa',
-                            'nim'         => $record->nim,
-                            'universitas' => $record->universitas,
-                            'jurusan'     => $record->jurusan,
-                            'telepon'     => $record->no_telpon,
+                            'name'                  => $record->nama_lengkap,
+                            'email'                 => $record->email,
+                            'password'              => Hash::make($tempPassword),
+                            'role'                  => 'mahasiswa',
+                            'nim'                   => $record->nim,
+                            'universitas'           => $record->universitas,
+                            'jurusan'               => $record->jurusan,
+                            'telepon'               => $record->no_telpon,
+                            'force_password_change' => true,
                         ]);
 
                         $record->update([
@@ -232,7 +267,7 @@ class PendaftaranResource extends Resource
                             'user_id'         => $user->id,
                             'tanggal_mulai'   => $data['tanggal_mulai'],
                             'tanggal_selesai' => $data['tanggal_selesai'],
-                            'catatan_admin'   => 'Akun dibuat otomatis. Password sementara: ' . $tempPassword,
+                            'catatan_admin'   => $data['catatan_admin'] ?? 'Akun dibuat otomatis.',
                         ]);
 
                         \Illuminate\Support\Facades\Mail::to($record->email)->send(

@@ -10,7 +10,7 @@ use Filament\Widgets\TableWidget as BaseWidget;
 class PengumpulanMenungguWidget extends BaseWidget
 {
     protected static ?int $sort = 7;
-    protected int | string | array $columnSpan = 'full';
+    protected int | string | array $columnSpan = 1;
 
     public function table(Table $table): Table
     {
@@ -36,7 +36,8 @@ class PengumpulanMenungguWidget extends BaseWidget
                     ->colors(['warning' => 'dikumpulkan'])
                     ->formatStateUsing(fn() => 'Menunggu Review'),
             ])
-            ->paginated(false)
+            ->defaultPaginationPageOption(5)
+            ->paginated([5, 10, 'all'])
             ->heading('Pengumpulan Menunggu Review')
             ->emptyStateHeading('Tidak ada pengumpulan menunggu review')
             ->emptyStateIcon('heroicon-o-inbox');

@@ -10,7 +10,7 @@ use Filament\Widgets\TableWidget as BaseWidget;
 class TugasDeadlineWidget extends BaseWidget
 {
     protected static ?int $sort = 5;
-    protected int | string | array $columnSpan = 'full';
+    protected int | string | array $columnSpan = 1;
 
     public function table(Table $table): Table
     {
@@ -48,7 +48,8 @@ class TugasDeadlineWidget extends BaseWidget
                     ->badge()
                     ->color('danger'),
             ])
-            ->paginated(false)
+            ->defaultPaginationPageOption(5)
+            ->paginated([5, 10, 'all'])
             ->heading('Tugas Mendekati Deadline (3 Hari)')
             ->emptyStateHeading('Tidak ada tugas mendekati deadline')
             ->emptyStateIcon('heroicon-o-check-circle');

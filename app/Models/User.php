@@ -16,12 +16,13 @@ class User extends Authenticatable implements FilamentUser
         'name',
         'email',
         'password',
-        'role', // 'admin' | 'mahasiswa'
+        'role', // 'super_admin' | 'admin' | 'mahasiswa'
         'nim',
         'universitas',
         'jurusan',
         'telepon',
         'foto',
+        'force_password_change',
     ];
 
     protected $hidden = [
@@ -30,14 +31,15 @@ class User extends Authenticatable implements FilamentUser
     ];
 
     protected $casts = [
-        'email_verified_at' => 'datetime',
-        'password'          => 'hashed',
+        'email_verified_at'     => 'datetime',
+        'password'              => 'hashed',
+        'force_password_change' => 'boolean',
     ];
 
-    // ── Filament: hanya admin yang bisa akses panel admin ─────────────────
+    // ── Filament: admin & super_admin bisa akses panel ──────────────────
     public function canAccessPanel(Panel $panel): bool
     {
-        return $this->role === 'admin';
+        return in_array($this->role, ['admin', 'super_admin']);
     }
 
     // ── Relasi ─────────────────────────────────────────────────────────────
@@ -56,10 +58,25 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasMany(PengumpulanTugas::class);
     }
 
+    public function tugas()
+    {
+        return $this->belongsToMany(Tugas::class, 'tugas_mahasiswa');
+    }
+
     // ── Helper ─────────────────────────────────────────────────────────────
+    public function isSuperAdmin(): bool
+    {
+        return $this->role === 'super_admin';
+    }
+
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
+    }
+
+    public function isAdminOrSuperAdmin(): bool
+    {
+        return in_array($this->role, ['admin', 'super_admin']);
     }
 
     public function isMahasiswa(): bool

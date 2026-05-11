@@ -77,9 +77,35 @@ class DashboardController extends Controller
         }
 
         auth()->user()->update([
-            'password' => Hash::make($request->password)
+            'password' => Hash::make($request->password),
+            'force_password_change' => false,
         ]);
 
         return back()->with('success', 'Password Anda berhasil diperbarui!');
+    }
+
+    public function updateFoto(Request $request)
+    {
+        $request->validate([
+            'foto' => 'required|image|mimes:jpg,jpeg,png,webp|max:2048',
+        ], [
+            'foto.required' => 'Pilih foto terlebih dahulu.',
+            'foto.image'    => 'File harus berupa gambar.',
+            'foto.mimes'    => 'Format foto harus JPG, PNG, atau WEBP.',
+            'foto.max'      => 'Ukuran foto maksimal 2MB.',
+        ]);
+
+        $user = auth()->user();
+
+        // Hapus foto lama jika ada
+        if ($user->foto) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($user->foto);
+        }
+
+        $path = $request->file('foto')->store('profil', 'public');
+
+        $user->update(['foto' => $path]);
+
+        return back()->with('success', 'Foto profil berhasil diperbarui!');
     }
 }

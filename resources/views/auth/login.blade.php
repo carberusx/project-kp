@@ -8,9 +8,9 @@
     {{-- Header --}}
     <header class="flex items-center justify-between px-6 md:px-10 py-4 bg-white border-b border-slate-200">
         <a href="{{ route('beranda') }}" class="flex items-center gap-3 text-primary">
-            <div class="h-14 w-auto">
+          <!--  <div class="h-6 w-auto">
             <img src="{{ asset('images/ptsp.png') }}" alt="PTSP Jateng" class="h-full w-auto object-contain">
-            </div>
+            </div> -->
             <h2 class="text-slate-900 text-xl font-bold">Magang DPMPTSP</h2>
         </a>
         <!--<div class="flex items-center gap-6">
@@ -26,8 +26,8 @@
             {{-- Card --}}
             <div class="bg-white p-8 md:p-10 rounded-2xl shadow-xl shadow-slate-200/80 border border-slate-200/80">
                 <div class="text-center mb-8">
-                    <div class="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center text-primary mx-auto mb-4">
-                        <span class="material-symbols-outlined text-3xl">lock_person</span>
+                    <div class="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-primary mx-auto mb-4">
+                        <img src="{{ asset('images/ptsp.png') }}" alt="PTSP Jateng" class="h-full w-auto object-contain">
                     </div>
                     <h1 class="text-slate-900 text-3xl font-black tracking-tight">Selamat Datang</h1>
                     <p class="text-slate-500 mt-1.5">Portal aman untuk Mahasiswa</p>
@@ -79,7 +79,7 @@
                             <input type="checkbox" name="remember" class="rounded border-slate-300 text-primary focus:ring-primary"/>
                             <span class="text-sm text-slate-600">Ingat saya</span>
                         </label>
-                        <a href="https://wa.me/6282328280963" class="text-primary text-sm font-semibold hover:underline">Lupa Password?</a>
+                        <button type="button" onclick="toggleResetModal()" class="text-primary text-sm font-semibold hover:underline">Lupa Password?</button>
                     </div>
 
                     <button type="submit" class="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-primary/25">
@@ -106,7 +106,54 @@
     </main>
 
     <footer class="p-6 text-center">
-        <p class="text-slate-400 text-xs">© {{ date('Y') }} MagangDPMPTSP — Sistem Manajemen Magang Pusat. Hak cipta dilindungi.</p>
+        <p class="text-slate-400 text-xs">© {{ date('Y') }} Magang DPMPTSP. Hak cipta dilindungi.</p>
     </footer>
 </div>
+
+{{-- Modal Lupa Password --}}
+<div id="resetModal" class="fixed inset-0 z-[100] hidden">
+    <!-- Backdrop -->
+    <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" onclick="toggleResetModal()"></div>
+    
+    <!-- Modal Content -->
+    <div class="fixed inset-0 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden transform transition-all">
+            <div class="p-6">
+                <div class="w-12 h-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-4 mx-auto">
+                    <span class="material-symbols-outlined text-2xl">lock_reset</span>
+                </div>
+                <h3 class="text-lg font-bold text-slate-900 text-center mb-2">Lupa Password Anda?</h3>
+                <p class="text-sm text-slate-500 text-center leading-relaxed mb-6">
+                    Karena alasan keamanan data, reset password hanya dapat dilakukan oleh Admin Pembimbing Lapangan.
+                </p>
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 mb-6">
+                    <p class="text-xs text-slate-600 text-center">
+                        Silakan kirim pesan WhatsApp dengan format:<br>
+                        <span class="font-bold text-slate-800">"Nama Lengkap - NIM - Reset Password"</span>
+                    </p>
+                </div>
+                <div class="flex flex-col gap-3">
+                    <a href="https://wa.me/{{ \App\Models\Pengaturan::getNilai('nomor_wa_admin', '6282328280963') }}" target="_blank" class="w-full flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#1ebe5d] text-white font-bold py-3 rounded-xl transition-all shadow-md shadow-green-500/20">
+                        <span class="material-symbols-outlined text-xl">chat</span>
+                        Hubungi via WhatsApp
+                    </a>
+                    <button type="button" onclick="toggleResetModal()" class="w-full font-bold text-slate-500 hover:text-slate-700 py-3 rounded-xl transition-all">
+                        Kembali ke Login
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleResetModal() {
+        const modal = document.getElementById('resetModal');
+        if (modal.classList.contains('hidden')) {
+            modal.classList.remove('hidden');
+        } else {
+            modal.classList.add('hidden');
+        }
+    }
+</script>
 @endsection

@@ -15,13 +15,20 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // ── Admin ──────────────────────────────────────────────────────────
-        $admin = User::create([
-            'name'        => 'Administrator',
-            'email'       => 'admin@simagang.go.id',
-            'password'    => Hash::make('password'),
-            'role'        => 'admin',
-            'universitas' => null,
+        // ── Super Admin (Koordinator KP) ───────────────────────────────────
+        User::create([
+            'name'     => 'Super Administrator',
+            'email'    => 'superadmin@simagang.go.id',
+            'password' => Hash::make('password'),
+            'role'     => 'super_admin',
+        ]);
+
+        // ── Admin / Pembimbing Contoh ──────────────────────────────────────
+        User::create([
+            'name'     => 'Pembimbing Magang',
+            'email'    => 'admin@simagang.go.id',
+            'password' => Hash::make('password'),
+            'role'     => 'admin',
         ]);
 
         // ── Mahasiswa Demo ─────────────────────────────────────────────────

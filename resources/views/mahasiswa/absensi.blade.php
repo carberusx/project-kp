@@ -12,21 +12,25 @@
 <div class="space-y-6">
 
     {{-- ── Aksi Absensi ─────────────────────────────────────────────────── --}}
-    <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+    <div class="bg-white rounded-md border border-slate-200 p-6 shadow-sm">
         <h3 class="font-bold text-lg text-slate-900 flex items-center gap-2 mb-5">
-            <span class="material-symbols-outlined text-primary">fingerprint</span>
+            <!--<span class="material-symbols-outlined text-primary">fingerprint</span>-->
             Absensi Hari Ini - {{ now()->isoFormat('dddd, D MMMM Y') }}
         </h3>
 
         {{-- Info Waktu --}}
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            <div class="bg-slate-50 rounded-xl p-4 border border-slate-100">
+            <div class="bg-slate-50 rounded-md p-4 border border-slate-100">
                 <p class="text-xs text-slate-500 mb-1">Jam Sekarang</p>
                 <p class="text-xl font-bold" id="clock">{{ now()->format('H:i:s') }}</p>
             </div>
-            <div class="bg-slate-50 rounded-xl p-4 border border-slate-100">
+            <div class="bg-slate-50 rounded-md p-4 border border-slate-100">
                 <p class="text-xs text-slate-500 mb-1">Status</p>
-                <p class="text-sm font-bold {{ $absensiHariIni ? 'text-green-600' : ($isWeekend || $liburNasional ? 'text-slate-600' : 'text-amber-600') }}">
+                <p class="text-sm font-bold {{ 
+                    $absensiHariIni 
+                        ? ($absensiHariIni->status === 'alpha' ? 'text-red-600' : 'text-green-600') 
+                        : ($isWeekend || $liburNasional ? 'text-slate-600' : 'text-amber-600') 
+                }}">
                     @if($absensiHariIni)
                         {{ ucfirst($absensiHariIni->status) }}
                     @elseif($isWeekend || $liburNasional)
@@ -36,13 +40,13 @@
                     @endif
                 </p>
             </div>
-            <div class="bg-green-50 rounded-xl p-4 border border-green-100">
+            <div class="bg-green-50 rounded-md p-4 border border-green-100">
                 <p class="text-xs text-slate-500 mb-1">Jam Masuk</p>
                 <p class="text-xl font-bold text-green-700">
                     {{ $absensiHariIni?->jam_masuk ? \Carbon\Carbon::parse($absensiHariIni->jam_masuk)->format('H:i') : '-' }}
                 </p>
             </div>
-            <div class="bg-blue-50 rounded-xl p-4 border border-blue-100">
+            <div class="bg-blue-50 rounded-md p-4 border border-blue-100">
                 <p class="text-xs text-slate-500 mb-1">Jam Pulang</p>
                 <p class="text-xl font-bold text-blue-700">
                     {{ $absensiHariIni?->jam_keluar ? \Carbon\Carbon::parse($absensiHariIni->jam_keluar)->format('H:i') : '-' }}
@@ -51,7 +55,7 @@
         </div>
 
         @if($isWeekend || $liburNasional)
-            <div class="bg-amber-50 border border-amber-200 text-amber-800 rounded-xl p-4 flex items-start gap-3">
+            <div class="bg-amber-50 border border-amber-200 text-amber-800 rounded-md p-4 flex items-start gap-3">
                 <div>
                     <h4 class="font-bold text-sm">Hari Libur</h4>
                     <p class="text-sm">Hari ini adalah hari libur ({{ $isWeekend ? 'Akhir Pekan' : $liburNasional->keterangan }}). Anda tidak perlu melakukan absensi.</p>
@@ -59,40 +63,51 @@
             </div>
         @else
             {{-- Tombol Aksi --}}
-            <div class="flex flex-wrap gap-3">
+            <div class="grid grid-cols-2 sm:flex sm:flex-wrap gap-3">
                 @if(!$absensiHariIni)
                     <button onclick="bukaModalAbsensi('masuk')"
-                        class="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-md shadow-primary/20">
-                        <span class="material-symbols-outlined">login</span>
+                        class="w-full sm:w-auto flex items-center justify-center gap-1.5 sm:gap-2 bg-primary hover:bg-primary/90 text-white font-bold py-3 px-2 sm:px-6 rounded-md transition-all shadow-md shadow-primary/20 text-sm sm:text-base">
+                        <span class="material-symbols-outlined text-base sm:text-xl">fingerprint</span>
                         Tandai Hadir
                     </button>
                     <button onclick="document.getElementById('modal-izin-sakit').classList.remove('hidden')"
-                        class="flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-xl transition-all">
-                        <span class="material-symbols-outlined">event_busy</span>
+                        class="w-full sm:w-auto flex items-center justify-center gap-1.5 sm:gap-2 bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-2 sm:px-6 rounded-md transition-all text-sm sm:text-base">
+                        <span class="material-symbols-outlined text-base sm:text-xl">event_busy</span>
                         Izin / Sakit
                     </button>
 
                 @elseif($absensiHariIni->status === 'hadir' && !$absensiHariIni->jam_keluar)
-                    <div class="flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 px-5 py-3 rounded-xl font-semibold text-sm">
+                    <div class="col-span-2 w-full sm:w-auto flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 px-5 py-3 rounded-md font-semibold text-sm">
                         <span class="material-symbols-outlined">check_circle</span>
                         Masuk pukul {{ \Carbon\Carbon::parse($absensiHariIni->jam_masuk)->format('H:i') }}
                     </div>
                     <button onclick="bukaModalAbsensi('keluar')"
-                        class="flex items-center gap-2 border border-slate-300 text-slate-700 font-bold py-3 px-6 rounded-xl hover:bg-slate-50 transition-all">
+                        class="flex items-center gap-2 border border-slate-300 text-slate-700 font-bold py-3 px-6 rounded-md hover:bg-slate-50 transition-all">
                         <span class="material-symbols-outlined">logout</span>
                         Tandai Pulang
                     </button>
 
+                @elseif($absensiHariIni->status === 'alpha')
+                    <div class="col-span-2 w-full sm:w-auto flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 px-5 py-3 rounded-md font-semibold text-sm">
+                        <span class="material-symbols-outlined">cancel</span>
+                        Anda tercatat Alpha hari ini
+                    </div>
+                @elseif($absensiHariIni->status === 'izin' || $absensiHariIni->status === 'sakit')
+                    <div class="col-span-2 w-full bg-amber-50 border border-amber-200 text-amber-700 rounded-md p-4 flex items-center gap-3">
+                        <span class="material-symbols-outlined text-amber-600 text-3xl flex-shrink-0">
+                            {{ $absensiHariIni->status === 'izin' ? 'event_busy' : 'medical_services' }}
+                        </span>
+                        <div>
+                            <h4 class="font-bold text-sm">{{ ucfirst($absensiHariIni->status) }}</h4>
+                            <p class="text-sm">Anda telah tercatat {{ $absensiHariIni->status }} hari ini.</p>
+                        </div>
+                    </div>
                 @else
-                    <div class="flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 px-5 py-3 rounded-xl font-semibold text-sm">
+                    <div class="col-span-2 w-full sm:w-auto flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 px-5 py-3 rounded-md font-semibold text-sm">
                         <span class="material-symbols-outlined">task_alt</span>
-                        @if($absensiHariIni->status === 'hadir')
+                        <span class="whitespace-nowrap">
                             Absensi lengkap — Durasi: {{ $absensiHariIni->durasi ?? '-' }}
-                        @elseif($absensiHariIni->status === 'izin')
-                            Izin hari ini telah tercatat
-                        @elseif($absensiHariIni->status === 'sakit')
-                            Sakit hari ini telah tercatat
-                        @endif
+                        </span>
                     </div>
                 @endif
             </div>
@@ -100,7 +115,7 @@
 
         {{-- Info lokasi absensi masuk --}}
         @if($absensiHariIni?->alamat_masuk)
-        <div class="mt-4 flex items-start gap-2 text-xs text-slate-500 bg-slate-50 rounded-xl p-3">
+        <div class="mt-4 flex items-start gap-2 text-xs text-slate-500 bg-slate-50 rounded-md p-3">
             <span class="material-symbols-outlined text-sm text-primary">location_on</span>
             <div>
                 <span class="font-semibold">Lokasi masuk:</span> {{ $absensiHariIni->alamat_masuk }}
@@ -113,7 +128,7 @@
 
         {{-- Info Keterangan / Terlambat / Pulang Cepat --}}
         @if($absensiHariIni?->keterangan)
-    <div class="mt-3 text-xs text-amber-600 bg-amber-50 rounded-xl p-3 border border-amber-100">
+    <div class="mt-3 text-xs text-amber-600 bg-amber-50 rounded-md p-3 border border-amber-100">
         <span class="font-bold">Catatan:</span> {{ $absensiHariIni->keterangan }}
     </div>
         @endif
@@ -121,26 +136,26 @@
 
     {{-- ── Ringkasan Bulan Ini ───────────────────────────────────────────── --}}
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm text-center">
+        <div class="bg-white rounded-md border border-slate-200 p-5 shadow-sm text-center">
             <p class="text-3xl font-black text-primary">{{ $totalHadir }}</p>
             <p class="text-xs text-slate-500 font-medium mt-1">Hari Hadir</p>
         </div>
-        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm text-center">
+        <div class="bg-white rounded-md border border-slate-200 p-5 shadow-sm text-center">
             <p class="text-3xl font-black text-amber-500">{{ $riwayat->where('status','izin')->count() }}</p>
             <p class="text-xs text-slate-500 font-medium mt-1">Hari Izin</p>
         </div>
-        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm text-center">
+        <div class="bg-white rounded-md border border-slate-200 p-5 shadow-sm text-center">
             <p class="text-3xl font-black text-blue-500">{{ $riwayat->where('status','sakit')->count() }}</p>
             <p class="text-xs text-slate-500 font-medium mt-1">Hari Sakit</p>
         </div>
-        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm text-center">
+        <div class="bg-white rounded-md border border-slate-200 p-5 shadow-sm text-center">
             <p class="text-3xl font-black text-red-500">{{ $riwayat->where('status','alpha')->count() }}</p>
             <p class="text-xs text-slate-500 font-medium mt-1">Alpha</p>
         </div>
     </div>
 
     {{-- ── Riwayat Absensi ──────────────────────────────────────────────── --}}
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+    <div class="bg-white rounded-md border border-slate-200 shadow-sm overflow-hidden">
         <div class="p-6 border-b border-slate-100">
             <h3 class="font-bold text-lg text-slate-900">Riwayat Absensi</h3>
         </div>
@@ -216,7 +231,7 @@
 
 {{-- ── Modal Absensi (Foto + GPS) ──────────────────────────────────────── --}}
 <div id="modal-absensi" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm max-h-full flex flex-col">
+    <div class="bg-white rounded-md shadow-2xl w-full max-w-sm max-h-full flex flex-col">
         <div class="flex items-center justify-between p-4 sm:p-5 border-b border-slate-100 flex-shrink-0">
             <h3 class="font-bold text-lg" id="modal-absensi-title">Absensi Masuk</h3>
             <button onclick="tutupModalAbsensi()" class="text-slate-400 hover:text-slate-600 p-1">
@@ -228,7 +243,7 @@
             {{-- Kamera --}}
             <div>
                 <p class="text-sm font-semibold text-slate-700 mb-2">Ambil Foto Selfie</p>
-                <div class="relative bg-slate-900 rounded-xl overflow-hidden aspect-video">
+                <div class="relative bg-slate-900 rounded-md overflow-hidden aspect-video">
                     <video id="camera-preview" class="w-full h-full object-cover" autoplay playsinline></video>
                     <canvas id="camera-canvas" class="hidden w-full h-full object-cover"></canvas>
                     <div id="foto-taken" class="hidden absolute inset-0">
@@ -238,13 +253,13 @@
                 <div class="flex gap-2 mt-3">
                     <button type="button" onclick="ambilFoto()"
                         id="btn-capture"
-                        class="flex-1 flex items-center justify-center gap-2 bg-primary text-white font-bold py-2.5 rounded-xl text-sm hover:bg-primary/90 transition-all">
+                        class="flex-1 flex items-center justify-center gap-2 bg-primary text-white font-bold py-2.5 rounded-md text-sm hover:bg-primary/90 transition-all">
                         <span class="material-symbols-outlined text-lg">photo_camera</span>
                         Ambil Foto
                     </button>
                     <button type="button" onclick="ulangi()"
                         id="btn-ulangi"
-                        class="hidden flex-1 flex items-center justify-center gap-2 border border-slate-300 text-slate-700 font-bold py-2.5 rounded-xl text-sm hover:bg-slate-50 transition-all">
+                        class="hidden flex-1 flex items-center justify-center gap-2 border border-slate-300 text-slate-700 font-bold py-2.5 rounded-md text-sm hover:bg-slate-50 transition-all">
                         <span class="material-symbols-outlined text-lg">refresh</span>
                         Ulangi
                     </button>
@@ -252,7 +267,7 @@
             </div>
 
             {{-- Lokasi --}}
-            <div class="bg-slate-50 rounded-xl p-3 border border-slate-200">
+            <div class="bg-slate-50 rounded-md p-3 border border-slate-200">
                 <div class="flex items-center justify-between mb-1">
                     <p class="text-xs font-semibold text-slate-700">Lokasi GPS</p>
                     <button type="button" onclick="ambilLokasi()"
@@ -274,16 +289,16 @@
 
             {{-- Form Keterangan --}}
             <div>
-                <textarea id="input-keterangan-mahasiswa" rows="1" placeholder="Catatan tambahan (Opsional)..." class="w-full rounded-xl border-slate-300 focus:border-primary focus:ring-primary py-2 px-3 text-xs resize-none"></textarea>
+                <textarea id="input-keterangan-mahasiswa" rows="1" placeholder="Catatan tambahan (Opsional)..." class="w-full rounded-md border-slate-300 focus:border-primary focus:ring-primary py-2 px-3 text-xs resize-none"></textarea>
             </div>
 
             {{-- Error --}}
-            <div id="absensi-error" class="hidden p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700"></div>
+            <div id="absensi-error" class="hidden p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-700"></div>
 
             {{-- Submit --}}
             <button type="button" onclick="submitAbsensi()"
                 id="btn-submit-absensi"
-                class="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-xl transition-all shadow-md shadow-primary/20">
+                class="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-md transition-all shadow-md shadow-primary/20">
                 <span class="material-symbols-outlined">send</span>
                 <span id="btn-submit-label">Kirim Absensi</span>
             </button>
@@ -293,7 +308,7 @@
 
 {{-- ── Modal Izin / Sakit ───────────────────────────────────────────────── --}}
 <div id="modal-izin-sakit" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
+    <div class="bg-white rounded-md shadow-2xl w-full max-w-md p-6">
         <div class="flex items-center justify-between mb-5">
             <h3 class="font-bold text-lg text-slate-900">Form Izin / Sakit</h3>
             <button onclick="document.getElementById('modal-izin-sakit').classList.add('hidden')"
@@ -301,21 +316,30 @@
                 <span class="material-symbols-outlined">close</span>
             </button>
         </div>
-        <form action="{{ route('mahasiswa.absensi.izinsakit') }}" method="POST" class="space-y-4">
+        <form action="{{ route('mahasiswa.absensi.izinsakit') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
             @csrf
+            @if ($errors->any())
+                <div class="p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-700">
+                    <ul class="list-disc list-inside">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
             <div>
                 <label class="block text-sm font-semibold text-slate-700 mb-2">Jenis Ketidakhadiran</label>
                 <div class="grid grid-cols-2 gap-3">
                     <label class="cursor-pointer">
                         <input type="radio" name="status" value="izin" class="peer hidden" required/>
-                        <div class="flex items-center gap-2 p-3 border-2 border-slate-200 rounded-xl peer-checked:border-amber-500 peer-checked:bg-amber-50 transition-all">
+                        <div class="flex items-center gap-2 p-3 border-2 border-slate-200 rounded-md peer-checked:border-amber-500 peer-checked:bg-amber-50 transition-all">
                             <span class="material-symbols-outlined text-amber-500">event_busy</span>
                             <span class="text-sm font-semibold">Izin</span>
                         </div>
                     </label>
                     <label class="cursor-pointer">
                         <input type="radio" name="status" value="sakit" class="peer hidden"/>
-                        <div class="flex items-center gap-2 p-3 border-2 border-slate-200 rounded-xl peer-checked:border-blue-500 peer-checked:bg-blue-50 transition-all">
+                        <div class="flex items-center gap-2 p-3 border-2 border-slate-200 rounded-md peer-checked:border-blue-500 peer-checked:bg-blue-50 transition-all">
                             <span class="material-symbols-outlined text-blue-500">medical_services</span>
                             <span class="text-sm font-semibold">Sakit</span>
                         </div>
@@ -326,14 +350,19 @@
                 <label class="block text-sm font-semibold text-slate-700 mb-2">Keterangan <span class="text-red-500">*</span></label>
                 <textarea name="keterangan" rows="3" required
                     placeholder="Jelaskan alasan izin/sakit Anda..."
-                    class="w-full rounded-xl border-slate-300 focus:border-primary focus:ring-primary p-3 text-sm resize-none"></textarea>
+                    class="w-full rounded-md border-slate-300 focus:border-primary focus:ring-primary p-3 text-sm resize-none"></textarea>
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">Unggah Bukti (Opsional) <span class="text-xs text-slate-500 font-normal">(PDF/JPG/PNG max 2MB)</span></label>
+                <input type="file" name="bukti_file" accept=".pdf,.jpg,.jpeg,.png"
+                    class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/90">
             </div>
             <div class="flex gap-3">
-                <button type="submit" class="flex-1 flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-xl transition-all">
+                <button type="submit" class="flex-1 flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-md transition-all">
                     <span class="material-symbols-outlined">send</span>Kirim
                 </button>
                 <button type="button" onclick="document.getElementById('modal-izin-sakit').classList.add('hidden')"
-                    class="flex-1 border border-slate-300 text-slate-700 font-bold py-3 rounded-xl hover:bg-slate-50 transition-all">
+                    class="flex-1 border border-slate-300 text-slate-700 font-bold py-3 rounded-md hover:bg-slate-50 transition-all">
                     Batal
                 </button>
             </div>
@@ -373,7 +402,13 @@ document.addEventListener('DOMContentLoaded', () => {
         bukaModalAbsensi('masuk');
     } else if (params.get('action') === 'keluar') {
         bukaModalAbsensi('keluar');
+    } else if (params.get('action') === 'izin_sakit') {
+        document.getElementById('modal-izin-sakit').classList.remove('hidden');
     }
+
+    @if($errors->any())
+        document.getElementById('modal-izin-sakit').classList.remove('hidden');
+    @endif
 });
 
 async function bukaModalAbsensi(tipe) {

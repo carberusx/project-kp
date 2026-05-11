@@ -170,6 +170,53 @@ class PengumpulanTugasResource extends Resource
                 Tables\Filters\SelectFilter::make('tugas_id')
                     ->label('Filter Tugas')
                     ->relationship('tugas', 'judul'),
+                Tables\Filters\Filter::make('rentang_waktu')
+                    ->form([
+                        Forms\Components\DatePicker::make('dari_tanggal')
+                            ->label('Dari Tanggal (Pengumpulan)'),
+                        Forms\Components\DatePicker::make('sampai_tanggal')
+                            ->label('Sampai Tanggal (Pengumpulan)'),
+                    ])
+                    ->query(function (\Illuminate\Database\Eloquent\Builder $query, array $data): \Illuminate\Database\Eloquent\Builder {
+                        return $query
+                            ->when(
+                                $data['dari_tanggal'],
+                                fn (\Illuminate\Database\Eloquent\Builder $query, $date): \Illuminate\Database\Eloquent\Builder => $query->whereDate('dikumpulkan_at', '>=', $date),
+                            )
+                            ->when(
+                                $data['sampai_tanggal'],
+                                fn (\Illuminate\Database\Eloquent\Builder $query, $date): \Illuminate\Database\Eloquent\Builder => $query->whereDate('dikumpulkan_at', '<=', $date),
+                            );
+                    }),
+            ])
+            ->headerActions([
+                \Filament\Actions\Action::make('export_csv_langsung')
+                    ->label('Export CSV')
+                    ->icon('heroicon-o-document-arrow-down')
+                    ->color('success')
+                    ->action(function ($livewire) {
+                        $records = $livewire->getFilteredTableQuery()->get();
+                        
+                        $filename = 'export-tugas-' . date('Ymd_His') . '.csv';
+                        return response()->streamDownload(function () use ($records) {
+                            $handle = fopen('php://output', 'w');
+                            fputcsv($handle, ['Nama Mahasiswa', 'Judul Tugas', 'Waktu Pengumpulan', 'Status Waktu', 'Nilai', 'Status Penilaian', 'Feedback']);
+                            foreach ($records as $record) {
+                                fputcsv($handle, [
+                                    $record->user->name ?? '-',
+                                    $record->tugas->judul ?? '-',
+                                    $record->dikumpulkan_at ? $record->dikumpulkan_at->format('Y-m-d H:i') : '-',
+                                    $record->isLate() ? 'Terlambat ' . $record->terlambat_text : 'Tepat Waktu',
+                                    $record->nilai ?? '-',
+                                    $record->status ?? '-',
+                                    $record->feedback ?? '-',
+                                ]);
+                            }
+                            fclose($handle);
+                        }, $filename, [
+                            'Content-Type' => 'text/csv',
+                        ]);
+                    }),
             ])
             ->actions([
                 // PENTING: Di v5, Action::make() sudah universal

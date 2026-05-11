@@ -96,6 +96,12 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\ImageColumn::make('foto')
+                    ->label('Foto')
+                    ->disk('public')
+                    ->circular()
+                    ->defaultImageUrl(fn ($record) => 'https://ui-avatars.com/api/?name=' . urlencode($record->name) . '&color=1a2fa1&background=e8ecf7')
+                    ->size(40),
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nama')
                     ->searchable()
@@ -127,6 +133,12 @@ class UserResource extends Resource
             ->filters([])
             ->actions([
                 // SOLUSI: Menggunakan Actions\ bukan Tables\Actions\
+                Actions\Action::make('cetakEvaluasi')
+                    ->label('Cetak Evaluasi')
+                    ->icon('heroicon-o-document-text')
+                    ->color('info')
+                    ->url(fn (User $record) => route('admin.rekap-evaluasi', $record))
+                    ->openUrlInNewTab(),
                 Actions\EditAction::make(),
                 Actions\DeleteAction::make(),
             ])

@@ -1,2 +1,2 @@
 <?php
-// Widget dihapus atas permintaan user.
+// Widget dihapus gjdi

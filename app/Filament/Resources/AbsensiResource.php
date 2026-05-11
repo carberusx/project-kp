@@ -90,6 +90,16 @@ class AbsensiResource extends Resource
                             : 'Belum ada foto'),
                 ])->columns(2),
 
+            Section::make('Bukti Izin / Sakit')
+                ->schema([
+                    Forms\Components\Placeholder::make('bukti_file_view')
+                        ->label('File Bukti')
+                        ->content(fn ($record) => $record && $record->bukti_file 
+                            ? new \Illuminate\Support\HtmlString("<a href='".asset('storage/'.$record->bukti_file)."' target='_blank' style='display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; background-color: #3b82f6; color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 600; text-decoration: none;'>Lihat / Download Bukti</a>") 
+                            : 'Tidak ada bukti surat yang diunggah.'),
+                ])
+                ->visible(fn ($record) => $record && in_array($record->status, ['sakit', 'izin'])),
+
             Section::make('Informasi Lokasi GPS')
                 ->schema([
                     Forms\Components\TextInput::make('alamat_masuk')
@@ -120,6 +130,12 @@ class AbsensiResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\ImageColumn::make('user.foto')
+                    ->label('Foto')
+                    ->disk('public')
+                    ->circular()
+                    ->defaultImageUrl(fn ($record) => 'https://ui-avatars.com/api/?name=' . urlencode($record->user?->name ?? '') . '&color=1a2fa1&background=e8ecf7')
+                    ->size(36),
                 Tables\Columns\TextColumn::make('user.name')
                     ->label('Mahasiswa')
                     ->searchable()
@@ -134,9 +150,23 @@ class AbsensiResource extends Resource
                     ->date('d M Y')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('jam_masuk')
-                    ->label('Masuk'),
+                    ->label('Masuk')
+                    ->time('H:i'),
                 Tables\Columns\TextColumn::make('jam_keluar')
-                    ->label('Keluar'),
+                    ->label('Keluar')
+                    ->getStateUsing(function ($record) {
+                        if (in_array($record->status, ['izin', 'sakit', 'alpha'])) return '—';
+                        if ($record->jam_keluar) return \Carbon\Carbon::parse($record->jam_keluar)->format('H:i');
+                        if (\Carbon\Carbon::parse($record->tanggal)->isToday()) return 'Belum Waktunya';
+                        return 'Tidak Absen Keluar';
+                    })
+                    ->badge(fn ($record) => $record->jam_keluar === null)
+                    ->color(function ($record) {
+                        if (in_array($record->status, ['izin', 'sakit', 'alpha'])) return 'gray';
+                        if ($record->jam_keluar !== null) return null;
+                        if (\Carbon\Carbon::parse($record->tanggal)->isToday()) return 'warning';
+                        return 'danger';
+                    }),
                 Tables\Columns\ImageColumn::make('foto_masuk')
                     ->label('Foto Masuk')
                     ->disk('public')
@@ -168,6 +198,15 @@ class AbsensiResource extends Resource
                     )
                     ->openUrlInNewTab()
                     ->toggleable(),
+
+                Tables\Columns\TextColumn::make('bukti_file')
+                    ->label('Bukti Surat')
+                    ->formatStateUsing(fn ($state, $record) => $record->bukti_file ? 'Lihat Bukti' : '—')
+                    ->color('primary')
+                    ->weight('bold')
+                    ->url(fn ($record) => $record->bukti_file ? asset('storage/'.$record->bukti_file) : null)
+                    ->openUrlInNewTab()
+                    ->toggleable(),
                 
                 // Mengganti BadgeColumn ke TextColumn badge v5
                 Tables\Columns\TextColumn::make('status')
@@ -197,6 +236,54 @@ class AbsensiResource extends Resource
                 Tables\Filters\Filter::make('hari_ini')
                     ->label('Hari Ini')
                     ->query(fn($query) => $query->whereDate('tanggal', today())),
+                Tables\Filters\Filter::make('rentang_waktu')
+                    ->form([
+                        Forms\Components\DatePicker::make('dari_tanggal')
+                            ->label('Dari Tanggal'),
+                        Forms\Components\DatePicker::make('sampai_tanggal')
+                            ->label('Sampai Tanggal'),
+                    ])
+                    ->query(function (\Illuminate\Database\Eloquent\Builder $query, array $data): \Illuminate\Database\Eloquent\Builder {
+                        return $query
+                            ->when(
+                                $data['dari_tanggal'],
+                                fn (\Illuminate\Database\Eloquent\Builder $query, $date): \Illuminate\Database\Eloquent\Builder => $query->whereDate('tanggal', '>=', $date),
+                            )
+                            ->when(
+                                $data['sampai_tanggal'],
+                                fn (\Illuminate\Database\Eloquent\Builder $query, $date): \Illuminate\Database\Eloquent\Builder => $query->whereDate('tanggal', '<=', $date),
+                            );
+                    }),
+            ])
+            ->headerActions([
+                \Filament\Actions\Action::make('export_csv_langsung')
+                    ->label('Export CSV')
+                    ->icon('heroicon-o-document-arrow-down')
+                    ->color('success')
+                    ->action(function ($livewire) {
+                        $records = $livewire->getFilteredTableQuery()->get();
+                        
+                        $filename = 'export-absensi-' . date('Ymd_His') . '.csv';
+                        return response()->streamDownload(function () use ($records) {
+                            $handle = fopen('php://output', 'w');
+                            fputcsv($handle, ['Nama Mahasiswa', 'NIM', 'Universitas', 'Tanggal', 'Jam Masuk', 'Jam Keluar', 'Status', 'Keterangan']);
+                            foreach ($records as $record) {
+                                fputcsv($handle, [
+                                    $record->user->name ?? '-',
+                                    $record->user->nim ?? '-',
+                                    $record->user->universitas ?? '-',
+                                    $record->tanggal ? $record->tanggal->format('Y-m-d') : '-',
+                                    $record->jam_masuk ? \Carbon\Carbon::parse($record->jam_masuk)->format('H:i') : '-',
+                                    $record->jam_keluar ? \Carbon\Carbon::parse($record->jam_keluar)->format('H:i') : '-',
+                                    $record->status ?? '-',
+                                    $record->keterangan ?? '-',
+                                ]);
+                            }
+                            fclose($handle);
+                        }, $filename, [
+                            'Content-Type' => 'text/csv',
+                        ]);
+                    }),
             ])
             ->actions([
                 \Filament\Actions\ViewAction::make(),

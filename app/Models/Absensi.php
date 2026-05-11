@@ -28,6 +28,7 @@ class Absensi extends Model
         'longitude_keluar',
         'alamat_masuk',
         'alamat_keluar',
+        'bukti_file',
     ];
 
     protected $casts = [

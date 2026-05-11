@@ -6,12 +6,12 @@
 
 @section('content')
 <div class="max-w-2xl">
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+    <div class="bg-white rounded-md border border-slate-200 shadow-sm overflow-hidden">
 
         {{-- Header --}}
         <div class="bg-gradient-to-r from-primary to-blue-600 p-6 text-white">
             <div class="flex items-start gap-3">
-                <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                <div class="w-12 h-12 bg-white/20 rounded-md flex items-center justify-center flex-shrink-0">
                     <span class="material-symbols-outlined text-2xl">upload_file</span>
                 </div>
                 <div>
@@ -33,11 +33,11 @@
 
             {{-- Tipe & Deadline --}}
             <div class="grid grid-cols-2 gap-3">
-                <div class="bg-white rounded-xl p-3 border border-slate-200">
+                <div class="bg-white rounded-md p-3 border border-slate-200">
                     <p class="text-xs text-slate-400 font-medium mb-1">Tipe Tugas</p>
                     <p class="text-sm font-bold capitalize text-slate-800">{{ $tugas->tipe }}</p>
                 </div>
-                <div class="bg-white rounded-xl p-3 border border-slate-200">
+                <div class="bg-white rounded-md p-3 border border-slate-200">
                     <p class="text-xs text-slate-400 font-medium mb-1">Deadline</p>
                     <p class="text-sm font-bold text-slate-800">{{ $tugas->deadline->isoFormat('D MMM Y, HH:mm') }}</p>
                 </div>
@@ -45,7 +45,7 @@
 
             {{-- Deskripsi --}}
             @if($tugas->deskripsi)
-            <div class="bg-white rounded-xl p-4 border border-slate-200">
+            <div class="bg-white rounded-md p-4 border border-slate-200">
                 <p class="text-xs text-slate-400 font-bold uppercase tracking-wider mb-2 flex items-center gap-1">
                     <span class="material-symbols-outlined text-sm">description</span>
                     Instruksi Tugas
@@ -56,14 +56,14 @@
 
             {{-- File Lampiran dari Admin --}}
             @if($tugas->file_tugas)
-            <div class="bg-primary/5 rounded-xl p-4 border border-primary/20">
+            <div class="bg-primary/5 rounded-md p-4 border border-primary/20">
                 <p class="text-xs text-primary font-bold uppercase tracking-wider mb-2 flex items-center gap-1">
                     <span class="material-symbols-outlined text-sm">attach_file</span>
                     File Lampiran dari Admin
                 </p>
                 <a href="{{ asset('storage/' . $tugas->file_tugas) }}"
                    target="_blank"
-                   class="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white font-semibold text-sm px-4 py-2.5 rounded-xl transition-colors shadow-sm shadow-primary/20">
+                   class="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white font-semibold text-sm px-4 py-2.5 rounded-md transition-colors shadow-sm shadow-primary/20">
                     <span class="material-symbols-outlined text-lg">download</span>
                     Download File Lampiran
                 </a>
@@ -81,7 +81,7 @@
             @csrf
 
             @if($errors->any())
-            <div class="p-4 bg-red-50 border border-red-200 rounded-xl">
+            <div class="p-4 bg-red-50 border border-red-200 rounded-md">
                 <ul class="space-y-1">
                     @foreach($errors->all() as $error)
                     <li class="text-sm text-red-700 flex items-center gap-1.5">
@@ -93,7 +93,7 @@
             @endif
 
             @if($tugas->isOverdue())
-            <div class="p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-800">
+            <div class="p-4 bg-red-50 border border-red-200 rounded-md text-sm text-red-800">
                 <div class="flex items-center gap-2 font-semibold mb-1">
                     <span class="material-symbols-outlined text-lg">warning</span>
                     Peringatan: Lewat Batas Waktu
@@ -108,7 +108,7 @@
             @endif
 
             @if($pengumpulan)
-            <div class="p-4 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-800">
+            <div class="p-4 bg-amber-50 border border-amber-200 rounded-md text-sm text-amber-800">
                 <div class="flex items-center gap-2 font-semibold mb-1">
                     <span class="material-symbols-outlined text-lg">info</span>
                     Tugas sudah pernah dikumpulkan
@@ -132,7 +132,7 @@
                 <label class="block text-sm font-semibold text-slate-700 mb-2">
                     File Tugas <span class="text-xs font-normal text-slate-400">(opsional jika Anda mengisi catatan)</span>
                 </label>
-                <div class="relative border-2 border-dashed border-slate-300 rounded-xl bg-slate-50 hover:border-primary hover:bg-primary/5 transition-all cursor-pointer" id="dropzone">
+                <div class="relative border-2 border-dashed border-slate-300 rounded-md bg-slate-50 hover:border-primary hover:bg-primary/5 transition-all cursor-pointer" id="dropzone">
                     <div class="flex flex-col items-center justify-center py-10" id="dropzone-content">
                         <span class="material-symbols-outlined text-4xl text-slate-400 mb-3">cloud_upload</span>
                         <p class="text-sm font-semibold text-slate-700">Klik untuk upload atau drag & drop</p>
@@ -149,17 +149,17 @@
                 <label class="block text-sm font-semibold text-slate-700 mb-2">Catatan <span class="text-xs font-normal text-slate-400">(opsional jika Anda mengupload file)</span></label>
                 <textarea name="catatan" rows="3"
                           placeholder="Tambahkan catatan untuk mentor Anda..."
-                          class="w-full rounded-xl border-slate-300 focus:border-primary focus:ring-primary p-4 text-sm resize-none">{{ old('catatan', $pengumpulan?->catatan) }}</textarea>
+                          class="w-full rounded-md border-slate-300 focus:border-primary focus:ring-primary p-4 text-sm resize-none">{{ old('catatan', $pengumpulan?->catatan) }}</textarea>
             </div>
 
             <div class="flex flex-col md:flex-row gap-3 pt-2">
                 <button type="submit"
-                    class="flex items-center w-full justify-center gap-2 bg-primary hover:bg-primary/90 text-white font-bold py-3 px-7 rounded-xl transition-all shadow-md shadow-primary/20">
+                    class="flex items-center w-full justify-center gap-2 bg-primary hover:bg-primary/90 text-white font-bold py-3 px-7 rounded-md transition-all shadow-md shadow-primary/20">
                     <span class="material-symbols-outlined">send</span>
                     {{ $pengumpulan ? 'Upload Ulang' : 'Kumpulkan Tugas' }}
                 </button>
                 <a href="{{ route('mahasiswa.tugas.index') }}"
-                   class="flex items-center justify-center gap-2 border border-slate-300 text-slate-700 font-bold py-3 px-6 rounded-xl hover:bg-slate-50 transition-all text-sm w-full md:w-auto">
+                   class="flex items-center justify-center gap-2 border border-slate-300 text-slate-700 font-bold py-3 px-6 rounded-md hover:bg-slate-50 transition-all text-sm w-full md:w-auto">
                     Batal
                 </a>
             </div>
@@ -167,7 +167,7 @@
         @elseif($isDinilai)
         {{-- Detail Pengumpulan (Read-only) --}}
         <div class="p-6 space-y-5">
-            <div class="p-5 bg-green-50 border-green-200 text-green-800 border rounded-2xl">
+            <div class="p-5 bg-green-50 border-green-200 text-green-800 border rounded-md">
                 <div class="flex items-center gap-2 text-lg font-bold mb-2">
                     <span class="material-symbols-outlined text-2xl">grade</span>
                     Tugas Dinilai
@@ -182,17 +182,17 @@
                 @endif
                 
                 @if($pengumpulan->feedback)
-                <div class="mt-4 p-4 bg-white/70 rounded-xl border border-white space-y-1">
+                <div class="mt-4 p-4 bg-white/70 rounded-md border border-white space-y-1">
                     <p class="text-xs font-bold uppercase tracking-wider opacity-60">Feedback dari Admin:</p>
                     <p class="text-sm font-medium leading-relaxed">{{ $pengumpulan->feedback }}</p>
                 </div>
                 @endif
             </div>
 
-            <div class="bg-slate-50 border border-slate-200 rounded-2xl p-5">
+            <div class="bg-slate-50 border border-slate-200 rounded-md p-5">
                 @if($pengumpulan->file_path)
                 <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">File yang Telah Dikumpulkan</p>
-                <a href="{{ asset('storage/' . $pengumpulan->file_path) }}" target="_blank" class="inline-flex items-center gap-3 text-primary bg-white border border-slate-200 shadow-sm hover:border-primary hover:shadow px-5 py-3 rounded-xl transition-all font-semibold">
+                <a href="{{ asset('storage/' . $pengumpulan->file_path) }}" target="_blank" class="inline-flex items-center gap-3 text-primary bg-white border border-slate-200 shadow-sm hover:border-primary hover:shadow px-5 py-3 rounded-md transition-all font-semibold">
                     <span class="material-symbols-outlined text-2xl">description</span>
                     Dokumen Tugas Anda
                 </a>
@@ -207,7 +207,7 @@
             </div>
 
             <div class="pt-4">
-                <a href="{{ route('mahasiswa.tugas.index') }}" class="flex items-center justify-center gap-2 border-2 border-slate-200 text-slate-600 font-bold py-3.5 px-6 rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all text-sm w-full">
+                <a href="{{ route('mahasiswa.tugas.index') }}" class="flex items-center justify-center gap-2 border-2 border-slate-200 text-slate-600 font-bold py-3.5 px-6 rounded-md hover:bg-slate-50 hover:border-slate-300 transition-all text-sm w-full">
                     
                     Kembali ke Daftar Tugas
                 </a>

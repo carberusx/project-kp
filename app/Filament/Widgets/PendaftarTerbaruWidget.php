@@ -10,7 +10,7 @@ use Filament\Widgets\TableWidget as BaseWidget;
 class PendaftarTerbaruWidget extends BaseWidget
 {
     protected static ?int $sort = 4;
-    protected int | string | array $columnSpan = 'full';
+    protected int | string | array $columnSpan = 1;
 
     public function table(Table $table): Table
     {
@@ -20,8 +20,7 @@ class PendaftarTerbaruWidget extends BaseWidget
             )
             ->columns([
                 Tables\Columns\TextColumn::make('nama_lengkap')
-                    ->label('Nama')
-                    ->searchable(),
+                    ->label('Nama'),
                 Tables\Columns\TextColumn::make('universitas')
                     ->label('Universitas'),
                 Tables\Columns\TextColumn::make('jurusan')

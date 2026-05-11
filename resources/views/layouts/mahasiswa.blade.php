@@ -4,6 +4,7 @@
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="icon" type="image/png" href="{{ asset('images/ptsp.png') }}">
     <title>@yield('title', 'Dashboard') - MagangDPMPTSP</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
     <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
@@ -52,7 +53,7 @@
 
         {{-- Logo --}}
         <div class="p-5 flex items-center gap-3 border-b border-slate-100">
-            <div class="h-10 w-auto flex-shrink-0">
+            <div class="h-6 w-auto flex-shrink-0">
                 <img src="{{ asset('images/ptsp.png') }}" alt="PTSP Jateng" class="h-full w-auto object-contain">
             </div>
             <div class="min-w-0">
@@ -69,21 +70,21 @@
         <nav class="flex-1 px-4 py-5 space-y-1 overflow-y-auto">
             <a href="{{ route('mahasiswa.dashboard') }}"
                onclick="closeSidebarOnMobile()"
-               class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all
+               class="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all
                       {{ request()->routeIs('mahasiswa.dashboard') ? 'bg-primary/10 text-primary font-semibold' : 'text-slate-600 hover:bg-slate-50' }}">
                 <span class="material-symbols-outlined text-xl">dashboard</span>
                 Dashboard
             </a>
             <a href="{{ route('mahasiswa.absensi.index') }}"
                onclick="closeSidebarOnMobile()"
-               class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all
+               class="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all
                       {{ request()->routeIs('mahasiswa.absensi.*') ? 'bg-primary/10 text-primary font-semibold' : 'text-slate-600 hover:bg-slate-50' }}">
                 <span class="material-symbols-outlined text-xl">calendar_today</span>
                 Absensi
             </a>
             <a href="{{ route('mahasiswa.tugas.index') }}"
                onclick="closeSidebarOnMobile()"
-               class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all
+               class="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all
                       {{ request()->routeIs('mahasiswa.tugas.*') ? 'bg-primary/10 text-primary font-semibold' : 'text-slate-600 hover:bg-slate-50' }}">
                 <span class="material-symbols-outlined text-xl">assignment</span>
                 <span class="flex-1">Tugas</span>
@@ -95,7 +96,7 @@
             </a>
             <a href="{{ route('mahasiswa.profil') }}"
                onclick="closeSidebarOnMobile()"
-               class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all
+               class="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all
                       {{ request()->routeIs('mahasiswa.profil') ? 'bg-primary/10 text-primary font-semibold' : 'text-slate-600 hover:bg-slate-50' }}">
                 <span class="material-symbols-outlined text-xl">person</span>
                 Profil
@@ -105,9 +106,14 @@
         {{-- User --}}
         <div class="p-4 border-t border-slate-100">
             <div class="flex items-center gap-3 px-2 mb-3">
-                <div class="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm flex-shrink-0">
-                    {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
-                </div>
+                @if(auth()->user()->foto)
+                    <img src="{{ asset('storage/' . auth()->user()->foto) }}" alt="Foto Profil"
+                         class="w-9 h-9 rounded-full object-cover flex-shrink-0 border border-slate-200">
+                @else
+                    <div class="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm flex-shrink-0">
+                        {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
+                    </div>
+                @endif
                 <div class="flex-1 min-w-0">
                     <p class="text-sm font-semibold truncate">{{ auth()->user()->name }}</p>
                     <p class="text-xs text-slate-400 truncate">{{ auth()->user()->email }}</p>
@@ -115,7 +121,7 @@
             </div>
             <form action="{{ route('logout') }}" method="POST">
                 @csrf
-                <button type="submit" class="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
+                <button type="submit" class="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-md transition-all">
                     <span class="material-symbols-outlined text-lg">logout</span>
                     Keluar
                 </button>
@@ -131,7 +137,7 @@
             <div class="flex items-center gap-3">
                 {{-- Hamburger menu (mobile only) --}}
                 <button onclick="toggleSidebar()"
-                        class="lg:hidden p-2 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors">
+                        class="lg:hidden p-2 rounded-md text-slate-500 hover:bg-slate-100 transition-colors">
                     <span class="material-symbols-outlined">menu</span>
                 </button>
                 <div>
@@ -162,25 +168,39 @@
             </div>
             @endif
 
+            @if ($errors->any())
+            <div class="mb-5 flex items-start gap-3 p-4 bg-red-50 border border-red-200 text-red-800 rounded-xl">
+                <span class="material-symbols-outlined text-red-600 flex-shrink-0">error</span>
+                <div>
+                    <p class="font-bold text-sm">Ada kesalahan pada input Anda:</p>
+                    <ul class="list-disc list-inside text-sm mt-1">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
+            @endif
+
             @yield('content')
         </div>
 
         {{-- Bottom Nav (mobile only) --}}
         <nav class="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-10 flex items-center justify-around px-2 py-2 safe-area-bottom">
             <a href="{{ route('mahasiswa.dashboard') }}"
-               class="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg
+               class="flex flex-col items-center gap-0.5 px-3 py-1 rounded-md
                       {{ request()->routeIs('mahasiswa.dashboard') ? 'text-primary' : 'text-slate-500' }}">
                 <span class="material-symbols-outlined text-2xl">dashboard</span>
                 <span class="text-[10px] font-medium">Dashboard</span>
             </a>
             <a href="{{ route('mahasiswa.absensi.index') }}"
-               class="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg
+               class="flex flex-col items-center gap-0.5 px-3 py-1 rounded-md
                       {{ request()->routeIs('mahasiswa.absensi.*') ? 'text-primary' : 'text-slate-500' }}">
                 <span class="material-symbols-outlined text-2xl">calendar_today</span>
                 <span class="text-[10px] font-medium">Absensi</span>
             </a>
             <a href="{{ route('mahasiswa.tugas.index') }}"
-               class="relative flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg
+               class="relative flex flex-col items-center gap-0.5 px-3 py-1 rounded-md
                       {{ request()->routeIs('mahasiswa.tugas.*') ? 'text-primary' : 'text-slate-500' }}">
                 <span class="material-symbols-outlined text-2xl">assignment</span>
                 @if($tugasBelumKumpul > 0)
@@ -191,7 +211,7 @@
                 <span class="text-[10px] font-medium">Tugas</span>
             </a>
             <a href="{{ route('mahasiswa.profil') }}"
-               class="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg
+               class="flex flex-col items-center gap-0.5 px-3 py-1 rounded-md
                       {{ request()->routeIs('mahasiswa.profil') ? 'text-primary' : 'text-slate-500' }}">
                 <span class="material-symbols-outlined text-2xl">person</span>
                 <span class="text-[10px] font-medium">Profil</span>

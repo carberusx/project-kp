@@ -11,7 +11,7 @@ use Filament\Widgets\TableWidget as BaseWidget;
 class BelumAbsenWidget extends BaseWidget
 {
     protected static ?int $sort = 6;
-    protected int | string | array $columnSpan = 'full';
+    protected int | string | array $columnSpan = 1;
 
     public function table(Table $table): Table
     {
@@ -28,16 +28,19 @@ class BelumAbsenWidget extends BaseWidget
             )
             ->columns([
                 Tables\Columns\TextColumn::make('name')
-                    ->label('Nama'),
+                    ->label('Nama')
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('nim')
-                    ->label('NIM'),
+                    ->label('NIM')
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('universitas')
                     ->label('Universitas'),
                 Tables\Columns\TextColumn::make('email')
                     ->label('Email')
                     ->toggleable(),
             ])
-            ->paginated(false)
+            ->defaultPaginationPageOption(5)
+            ->paginated([5, 10, 'all'])
             ->heading('Mahasiswa Belum Absen Hari Ini')
             ->emptyStateHeading('Semua mahasiswa sudah absen!')
             ->emptyStateIcon('heroicon-o-check-circle');

@@ -23,6 +23,10 @@ class AbsensiController extends Controller
 
     public function checkIn(Request $request)
     {
+        if ($this->isHariLibur()) {
+            return back()->with('error', 'Hari ini adalah hari libur / akhir pekan. Anda tidak dapat melakukan absensi.');
+        }
+
         $user = Auth::user();
 
         $existing = Absensi::where('user_id', $user->id)
@@ -46,25 +50,27 @@ class AbsensiController extends Controller
         ]);
 
         // Validasi Radius 50 Meter
-        $kantor_lat = -6.9834745188590315; // ubah lat sesuaikan dgn alamat kantor
-        $kantor_lon = 110.40770197890485; // ubah lon sesuaikan dgn alamat kantor
-        $max_radius = 50;
+        $kantor_lat = \App\Models\Pengaturan::getNilai('kantor_lat', '-6.9834745188590315');
+        $kantor_lon = \App\Models\Pengaturan::getNilai('kantor_lon', '110.40770197890485');
+        $max_radius = \App\Models\Pengaturan::getNilai('radius_absensi', 50);
 
         $jarak = $this->hitungJarak($request->latitude, $request->longitude, $kantor_lat, $kantor_lon);
 
         if ($jarak > $max_radius) {
-            return back()->with('error', 'Gagal absen. Anda berada ' . round($jarak) . ' meter dari kantor. Anda hanya bisa absen dalam radius 50 meter.');
+            return back()->with('error', 'Gagal absen. Anda berada ' . round($jarak) . ' meter dari kantor. Anda hanya bisa absen dalam radius ' . $max_radius . ' meter.');
         }
 
         // Simpan foto base64
         $fotoPath = $this->saveFoto($request->foto, 'masuk');
 
-        // Cek keterlambatan (Masuk > 07:00)
+        // Cek keterlambatan
+        $jamMasukStandar = \App\Models\Pengaturan::getNilai('jam_masuk_standar', '07:00:00');
         $jamSekarang = now()->format('H:i:s');
         $noteMasuk   = [];
         
-        if ($jamSekarang > '07:00:00') {
-            $waktuMasukStandar = \Carbon\Carbon::today()->setTime(7, 0, 0);
+        if ($jamSekarang > $jamMasukStandar) {
+            $parts = explode(':', $jamMasukStandar);
+            $waktuMasukStandar = \Carbon\Carbon::today()->setTime((int)$parts[0], (int)$parts[1], 0);
             $sekarang = now();
             $diffInMinutes = $waktuMasukStandar->diffInMinutes($sekarang);
             
@@ -127,24 +133,26 @@ class AbsensiController extends Controller
         ]);
 
         // Validasi Radius 50 Meter
-        $kantor_lat = -6.9834745188590315; // sesuaikan latitude dgn lok kantor
-        $kantor_lon = 110.40770197890485; // sesuaikan longitude dgn lok kantor
-        $max_radius = 50;
+        $kantor_lat = \App\Models\Pengaturan::getNilai('kantor_lat', '-6.9834745188590315');
+        $kantor_lon = \App\Models\Pengaturan::getNilai('kantor_lon', '110.40770197890485');
+        $max_radius = \App\Models\Pengaturan::getNilai('radius_absensi', 50);
 
         $jarak = $this->hitungJarak($request->latitude, $request->longitude, $kantor_lat, $kantor_lon);
 
         if ($jarak > $max_radius) {
-            return back()->with('error', 'Gagal absen. Anda berada ' . round($jarak) . ' meter dari kantor. Anda hanya bisa absen dalam radius 50 meter.');
+            return back()->with('error', 'Gagal absen. Anda berada ' . round($jarak) . ' meter dari kantor. Anda hanya bisa absen dalam radius ' . $max_radius . ' meter.');
         }
 
         $fotoPath = $this->saveFoto($request->foto, 'keluar');
 
-        // Cek pulang cepat (Keluar < 15:30)
+        // Cek pulang cepat dengan toleransi 15 menit
+        $jamPulangStandar = \App\Models\Pengaturan::getNilai('jam_pulang_standar', '15:30:00');
+        $batasToleransi = \Carbon\Carbon::parse($jamPulangStandar)->subMinutes(15)->format('H:i:s');
         $jamSekarang = now()->format('H:i:s');
         $keterangan  = $absensi->keterangan;
         
         $notePulang = [];
-        if ($jamSekarang < '15:30:00') {
+        if ($jamSekarang < $batasToleransi) {
             $notePulang[] = "Pulang cepat (" . now()->format('H:i') . ")";
         }
         if ($request->filled('keterangan_mahasiswa')) {
@@ -170,14 +178,21 @@ class AbsensiController extends Controller
 
     public function izinSakit(Request $request)
     {
+        if ($this->isHariLibur()) {
+            return back()->with('error', 'Hari ini adalah hari libur / akhir pekan. Anda tidak dapat mengajukan izin/sakit.');
+        }
+
         $user = Auth::user();
 
         $request->validate([
             'status'     => 'required|in:izin,sakit',
             'keterangan' => 'required|string|min:5|max:500',
+            'bukti_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
         ], [
             'keterangan.required' => 'Keterangan wajib diisi.',
             'keterangan.min'      => 'Keterangan minimal 5 karakter.',
+            'bukti_file.mimes'    => 'File bukti harus berupa PDF, JPG, atau PNG.',
+            'bukti_file.max'      => 'Ukuran file bukti maksimal 2MB.',
         ]);
 
         $existing = Absensi::where('user_id', $user->id)
@@ -188,15 +203,23 @@ class AbsensiController extends Controller
             return back()->with('error', 'Anda sudah melakukan absensi hari ini.');
         }
 
+        $buktiPath = null;
+        if ($request->hasFile('bukti_file')) {
+            $file = $request->file('bukti_file');
+            $filename = 'bukti_' . $request->status . '_' . now()->format('Ymd_His') . '_' . $user->id . '.' . $file->getClientOriginalExtension();
+            $buktiPath = $file->storeAs('absensi/bukti', $filename, 'public');
+        }
+
         Absensi::create([
             'user_id'    => $user->id,
             'tanggal'    => today()->toDateString(),
             'status'     => $request->status,
             'keterangan' => $request->keterangan,
+            'bukti_file' => $buktiPath,
         ]);
 
         $label = $request->status === 'izin' ? 'Izin' : 'Sakit';
-        return back()->with('success', $label . ' berhasil dicatat.');
+        return redirect()->route('mahasiswa.absensi.index')->with('success', $label . ' berhasil dicatat.');
     }
 
     private function saveFoto(string $base64, string $tipe): string
@@ -225,5 +248,30 @@ class AbsensiController extends Controller
         $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
 
         return $earthRadius * $c; // Jarak dalam meter
+    }
+
+    private function isHariLibur(): bool
+    {
+        $today = \Carbon\Carbon::today();
+
+        // Cek apakah hari ini ditetapkan sebagai Hari Kerja Khusus (override weekend/libur)
+        $kerjaKhusus = \App\Models\HariLibur::whereDate('tanggal', $today)
+            ->where('tipe', 'kerja_khusus')
+            ->exists();
+        if ($kerjaKhusus) {
+            return false; // Meskipun weekend/libur, absensi tetap dibuka
+        }
+
+        // Cek weekend
+        if ($today->isWeekend()) {
+            return true;
+        }
+
+        // Cek hari libur nasional (tipe = libur)
+        if (\App\Models\HariLibur::whereDate('tanggal', $today)->where('tipe', 'libur')->exists()) {
+            return true;
+        }
+
+        return false;
     }
 }

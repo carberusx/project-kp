@@ -6,6 +6,7 @@ use App\Http\Controllers\PendaftaranController;
 use App\Http\Controllers\AbsensiController;
 use App\Http\Controllers\TugasController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\AdminReportController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -24,7 +25,7 @@ Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 // ── Area Mahasiswa (Terautentikasi) ───────────────────────────────────────
-Route::middleware(['auth', 'role:mahasiswa'])->prefix('mahasiswa')->name('mahasiswa.')->group(function () {
+Route::middleware(['auth', 'role:mahasiswa', 'force.password.change'])->prefix('mahasiswa')->name('mahasiswa.')->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'mahasiswaDashboard'])->name('dashboard');
 
@@ -41,6 +42,12 @@ Route::middleware(['auth', 'role:mahasiswa'])->prefix('mahasiswa')->name('mahasi
     // Profil
     Route::get('/profil', [DashboardController::class, 'profil'])->name('profil');
     Route::put('/profil/password', [DashboardController::class, 'updatePassword'])->name('profil.password.update');
+    Route::put('/profil/foto', [DashboardController::class, 'updateFoto'])->name('profil.foto.update');
+});
+
+// ── Area Admin (Custom Routes di luar Filament) ───────────────────────────
+Route::middleware(['auth', 'role:admin,super_admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/rekap-evaluasi/{user}', [AdminReportController::class, 'rekapEvaluasi'])->name('rekap-evaluasi');
 });
 
 // Redirect /dashboard ke role yang sesuai

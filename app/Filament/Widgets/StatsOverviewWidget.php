@@ -13,7 +13,7 @@ class StatsOverviewWidget extends BaseWidget
 {
     protected function getColumns(): int
     {
-        return 1;
+        return 4;
     }
 
     protected function getStats(): array

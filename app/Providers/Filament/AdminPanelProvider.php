@@ -10,6 +10,7 @@ use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Navigation\NavigationGroup;
 use Filament\Pages;
+use Filament\Pages\Auth\EditProfile; // Import class EditProfile
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
@@ -31,15 +32,23 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
-            ->colors(['primary' => Color::Blue])
+            ->profile() // Mengaktifkan menu Edit Profile di pojok kanan atas
+            ->colors([
+                'primary' => Color::Blue,
+            ])
             ->brandName('Magang DPMPTSP - Admin')
+            ->brandLogo(fn () => asset('images/ptsp.png'))
+            ->brandLogoHeight('2rem')
+            ->favicon(fn () => asset('images/ptsp.png'))
             ->navigationGroups([
                 NavigationGroup::make('Manajemen'),
                 NavigationGroup::make('Monitoring'),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
-            ->pages([Pages\Dashboard::class])
+            ->pages([
+                Pages\Dashboard::class,
+            ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,

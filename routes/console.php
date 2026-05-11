@@ -37,12 +37,15 @@ Schedule::call(function () {
                              
         // Jika belum ada record sama sekali hari ini, insert data Alpha
         if (!$hasAbsensi) {
+            $jamPulang = \App\Models\Pengaturan::getNilai('jam_pulang_standar', '15:30:00');
+            $jamPulangFormat = Carbon::parse($jamPulang)->format('H.i');
+            
             Absensi::create([
                 'user_id'    => $mahasiswa->id,
                 'tanggal'    => $today,
                 'status'     => 'alpha',
-                'keterangan' => 'Sistem otomatis: Tidak melakukan absensi hingga pukul 19:00',
+                'keterangan' => 'Tidak melakukan absensi hingga pukul ' . $jamPulangFormat,
             ]);
         }
     }
-})->dailyAt('19:00');
+})->dailyAt(\Carbon\Carbon::parse(\App\Models\Pengaturan::getNilai('jam_pulang_standar', '15:30:00'))->format('H:i'));

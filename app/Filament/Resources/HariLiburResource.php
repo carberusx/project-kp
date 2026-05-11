@@ -10,31 +10,38 @@ use Filament\Schemas\Components\Section;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Actions; // <-- Tambahan PENTING untuk v5
+use Filament\Actions;
+use Illuminate\Support\Facades\Auth;
 
 class HariLiburResource extends Resource
 {
     protected static ?string $model = HariLibur::class;
 
+    // ── Hanya Super Admin ─────────────────────────────────────────────────
+    public static function canAccess(): bool
+    {
+        return Auth::check() && Auth::user()->isSuperAdmin();
+    }
+
     // --- PERUBAHAN 1: Property Navigasi Diubah Menjadi Method ---
-    public static function getNavigationIcon(): string | null
+    public static function getNavigationIcon(): string|null
     {
         return 'heroicon-o-calendar-days';
     }
 
     public static function getNavigationLabel(): string
     {
-        return 'Hari Libur';
+        return 'Kalender Kegiatan';
     }
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Manajemen';
+        return 'Pengaturan Web';
     }
 
     public static function getModelLabel(): string
     {
-        return 'Hari Libur';
+        return 'Kalender';
     }
 
     public static function getNavigationSort(): ?int
@@ -47,17 +54,26 @@ class HariLiburResource extends Resource
     {
         return $schema
             ->schema([
-                Section::make('Data Hari Libur')
+                Section::make('Data Kalender')
                     ->schema([
                         Forms\Components\DatePicker::make('tanggal')
-                            ->label('Tanggal Libur')
+                            ->label('Tanggal')
                             ->required()
                             ->unique(ignoreRecord: true),
+                        Forms\Components\Select::make('tipe')
+                            ->label('Jenis')
+                            ->options([
+                                'libur' => 'Hari Libur / Cuti Bersama',
+                                'kerja_khusus' => 'Hari Khusus (Weekend Namun Absensi Dibuka)',
+                            ])
+                            ->default('libur')
+                            ->required()
+                            ->native(false),
                         Forms\Components\TextInput::make('keterangan')
                             ->label('Keterangan')
                             ->required()
                             ->maxLength(255)
-                            ->placeholder('Misal: Hari Raya Idul Fitri, Cuti Bersama, dll.'),
+                            ->placeholder('Misal: Hari Raya Idul Fitri, Upacara Kemerdekaan, dll.'),
                     ])->columns(2),
             ]);
     }
@@ -70,7 +86,12 @@ class HariLiburResource extends Resource
                     ->label('Tanggal')
                     ->date('d M Y')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->description(fn($record) => \Carbon\Carbon::parse($record->tanggal)->isoFormat('dddd')),
+                Tables\Columns\BadgeColumn::make('tipe')
+                    ->label('Jenis')
+                    ->formatStateUsing(fn($state) => $state === 'kerja_khusus' ? 'Hari Khusus' : 'Hari Libur')
+                    ->color(fn($state) => $state === 'kerja_khusus' ? 'success' : 'danger'),
                 Tables\Columns\TextColumn::make('keterangan')
                     ->label('Keterangan')
                     ->searchable(),
